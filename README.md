@@ -11,6 +11,8 @@ It matches the Price check page in the Pest CRM (same prices, postcode lookup an
 4. **Price:** drag the slider left to right through **Low** (amber), **Medium** (green) and **High** (blue). It moves in $5 steps and the price and band show big. You can also tap Low / Medium / High, nudge with **−5 / +5**, or type a price. It warns below the lowest or above the top.
 5. **Quote:** the range, the lowest to go, km, drive time (normal and peak), diesel, the travel add-on, the total and what's left after diesel. **Copy / Text / WhatsApp** sends it to the customer.
 
+**General pest + German cockroach:** priced as general pest only, with German cockroach included. A follow-up visit in 2–3 weeks is flagged on the quote and in the message to the customer. **Charge it separately instead** switches back to two prices. `FOLLOWUP_FEE` (default $0) sets a charge for the follow-up.
+
 The total stays pinned at the bottom of the screen the whole time.
 
 ## Settings (top of the `<script>` in index.html)

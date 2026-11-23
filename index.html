@@ -124,6 +124,11 @@
   .fine{display:grid;grid-template-columns:60px 1fr 60px;gap:8px;margin-top:10px}
   .fine button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:12px;font-size:17px;font-weight:700;min-height:50px}
   .fine input{text-align:center;font-size:20px;font-weight:700;min-height:50px}
+  .info{background:var(--high-soft);border:1.5px solid var(--high);border-radius:12px;padding:10px 12px;font-size:15px;margin-top:10px}
+  .info b{display:block;font-size:16px;margin-bottom:2px}
+  .info .chip{margin-top:8px;min-height:44px;font-size:15px}
+  .fu{display:flex;gap:10px;align-items:flex-start;background:var(--low-soft);border:1.5px solid var(--low);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:15px}
+  .fu .ic{font-size:22px} .fu b{display:block}
   .warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:8px}
 
   /* quote */
@@ -270,6 +275,10 @@
   var LP_RANGE = [10, 12];
   // Drive time guide: first 10 road km at 35 km/h, the rest at 65 km/h; peak hour +50%.
   var CITY_KMH = 35, OPEN_KMH = 65, CITY_KM = 10, PEAK = 1.5;
+  // German cockroach always needs a follow-up visit. When it's booked with general pest,
+  // the job is charged at the general pest price only (German cockroach is included).
+  var FOLLOWUP_TEXT = "Follow-up visit in 2–3 weeks";
+  var FOLLOWUP_FEE = 0;           // 0 = follow-up included in the price; set a $ amount to charge it
   var BUSINESS = "Pestable";
   /* ================================================================ */
 
@@ -283,7 +292,7 @@
   var vehicle = Object.assign({}, VEHICLE_DEFAULTS, store.get("vehicle3") || {});
   var recent = store.get("recent") || [];
   var origin = {mode:"base", here:null};
-  function fresh(){ return {postcode:"", suburb:"", picked:null, services:[], property:null, price:{}, addon:"none"}; }
+  function fresh(){ return {postcode:"", suburb:"", picked:null, services:[], property:null, price:{}, addon:"none", gcSeparate:false}; }
   var st = fresh();
 
   var $ = function(id){return document.getElementById(id);};
@@ -299,7 +308,10 @@
     if(id==="general" && p) return {lo:p.lo, typ:Math.round((p.lo+p.hi)/2), hi:p.hi, src:p.name};
     var s=svc(id); return s.lo==null ? null : {lo:s.lo, typ:s.typ, hi:s.hi, src:s.note};
   }
-  function priceOf(id){ if(st.price[id]!==undefined && st.price[id]!=="") return Number(st.price[id])||0; if(st.price[id]==="") return 0; var r=rangeOf(id); return r?r.typ:0; }
+  // German cockroach rides along with general pest unless the tech chooses to charge it separately.
+  function included(id){ return id==="german_cockroach" && !st.gcSeparate && st.services.indexOf("general")>=0; }
+  function needsFollowUp(){ return st.services.indexOf("german_cockroach")>=0; }
+  function priceOf(id){ if(included(id)) return 0; if(st.price[id]!==undefined && st.price[id]!=="") return Number(st.price[id])||0; if(st.price[id]==="") return 0; var r=rangeOf(id); return r?r.typ:0; }
   // Which band a price sits in: the range split in thirds.
   function zoneOf(id,v){
     var r=rangeOf(id); if(!r) return {k:"none",name:""};
@@ -376,6 +388,10 @@
   function findIdx(r){ for(var i=0;i<PLACES.length;i++) if(PLACES[i][0]===r[0]&&PLACES[i][1]===r[1]) return i; return -1; }
 
   function sliderHTML(id){
+    if(included(id)) return '<div class="svc" id="s_'+id+'"><div class="svc-top"><div class="nm">'+svc(id).ic+' '+esc(svc(id).name)+'<small>Gel bait + follow-up</small></div>'+
+      '<div class="pill z-mid"><span class="zone">Included</span><span class="val">$0</span></div></div>'+
+      '<div class="info"><b>Included in the general pest price</b>Quote the general pest price only. '+FOLLOWUP_TEXT.toLowerCase().replace(/^follow/,"A follow")+' is needed.'+
+      '<br><button type="button" class="chip" data-act="gcSeparate">Charge it separately instead</button></div></div>';
     var s=svc(id), r=rangeOf(id), v=priceOf(id), z=zoneOf(id,v);
     var h='<div class="svc" id="s_'+id+'"><div class="svc-top"><div class="nm">'+s.ic+' '+esc(s.name)+'<small>'+esc(r?r.src:s.note)+'</small></div>'+
           '<div class="pill z-'+z.k+'" id="pill_'+id+'"><span class="zone">'+z.name+'</span><span class="val">'+(v?money(v):'$—')+'</span></div></div>';
@@ -413,7 +429,8 @@
     $("stepSvc").classList.toggle("done",st.services.length>0);
     $("stepProp").classList.toggle("done",!!st.property);
     $("priceCard").hidden = st.services.length===0;
-    $("svcRows").innerHTML = st.services.map(sliderHTML).join("");
+    $("svcRows").innerHTML = st.services.map(sliderHTML).join("") +
+      (st.gcSeparate && st.services.indexOf("general")>=0 && needsFollowUp() ? '<p class="note"><button type="button" class="chip" data-act="gcInclude">Include German cockroach in general pest</button></p>' : '');
   }
   function warnFor(id){
     var r=rangeOf(id), v=priceOf(id), s=svc(id);
@@ -424,14 +441,16 @@
 
   function totals(){
     var lo=0,hi=0,job=0,missing=[],ranged=0;
-    st.services.forEach(function(id){ var r=rangeOf(id), p=priceOf(id); job+=p; if(!p) missing.push(svc(id).name); if(r){lo+=r.lo;hi+=r.hi;ranged++;} else {lo+=p;hi+=p;} });
+    st.services.forEach(function(id){ if(included(id)) return; var r=rangeOf(id), p=priceOf(id); job+=p; if(!p) missing.push(svc(id).name); if(r){lo+=r.lo;hi+=r.hi;ranged++;} else {lo+=p;hi+=p;} });
+    var fu = needsFollowUp() ? FOLLOWUP_FEE : 0; job+=fu; lo+=fu; hi+=fu;
     var t=travel(), add=0, fuelAdd=0;
     if(t){ fuelAdd=Math.max(5,Math.ceil(t.fuel/5)*5); add=st.addon==="fuel"?fuelAdd:(FLAT_ADDONS.indexOf(+st.addon)>=0?+st.addon:0); }
     return {lo:lo,hi:hi,job:job,missing:missing,ranged:ranged,t:t,add:add,fuelAdd:fuelAdd,total:job+add};
   }
   function quoteText(T){
     var L=[BUSINESS+" quote"]; if(st.picked) L.push(st.picked[0]+" "+st.picked[1]);
-    st.services.forEach(function(id){ L.push("- "+svc(id).name+(id==="general"&&prop()?" ("+prop().name+")":"")+": "+money(priceOf(id))); });
+    st.services.forEach(function(id){ L.push("- "+svc(id).name+(id==="general"&&prop()?" ("+prop().name+")":"")+": "+(included(id)?"included":money(priceOf(id)))); });
+    if(needsFollowUp()) L.push("- "+FOLLOWUP_TEXT+": "+(FOLLOWUP_FEE?money(FOLLOWUP_FEE):"included"));
     if(T.add>0) L.push("- Travel: "+money(T.add));
     L.push("Total: "+money(T.total)); return L.join("\n");
   }
@@ -444,6 +463,7 @@
     } else {
       h+='<div class="hero empty"><div class="v">'+(st.services.length?'Set a price for each service':'Pick the suburb and the pest')+'</div></div>';
     }
+    if(needsFollowUp()) h+='<div class="fu"><span class="ic">🔁</span><span><b>German cockroach: follow-up needed</b>'+FOLLOWUP_TEXT+(st.services.indexOf("general")>=0&&!st.gcSeparate?'. Priced as general pest only.':'.')+'</span></div>';
     if(st.services.length && T.ranged && T.hi>T.lo){
       var pct=Math.max(0,Math.min(100,(T.job-T.lo)/(T.hi-T.lo)*100));
       h+='<div class="rangebar"><div class="rb"><span class="dot" style="left:'+pct+'%"></span></div>'+
@@ -463,7 +483,9 @@
     }
     if(st.services.length){
       h+='<div class="rows">'+st.services.map(function(id){var v=priceOf(id), z=zoneOf(id,v);
+        if(included(id)) return '<div class="row"><span>'+svc(id).ic+' '+esc(svc(id).name)+'<span class="sub">With general pest</span></span><b>Included</b></div>';
         return '<div class="row"><span>'+svc(id).ic+' '+esc(svc(id).name)+(z.name?'<span class="sub">'+z.name+'</span>':'')+'</span><b>'+(v?money(v):'—')+'</b></div>';}).join("")+
+        (needsFollowUp()?'<div class="row"><span>🔁 '+FOLLOWUP_TEXT+'<span class="sub">Book it before you leave</span></span><b>'+(FOLLOWUP_FEE?money(FOLLOWUP_FEE):'Included')+'</b></div>':'')+
         (T.add?'<div class="row"><span>🚐 Travel</span><b>'+money(T.add)+'</b></div>':'')+
         (t?'<div class="row"><span>⛽ Diesel '+(vehicle.returnTrip!==false?'there and back':'one way')+'<span class="sub">'+Math.round(t.km)+' km at '+t.lp+' L/100 · $'+t.dp.toFixed(2)+'/L</span></span><b>−'+money(t.fuel,true)+'</b></div>':'')+'</div>';
     }
@@ -495,7 +517,7 @@
     var b=e.target.closest("button"); if(!b) return; var d=b.dataset;
     if(d.svc){
       var i=st.services.indexOf(d.svc);
-      if(i>=0){ st.services.splice(i,1); delete st.price[d.svc]; } else st.services.push(d.svc);
+      if(i>=0){ st.services.splice(i,1); delete st.price[d.svc]; if(d.svc==="german_cockroach") st.gcSeparate=false; } else st.services.push(d.svc);
       render();
     } else if(d.prop){
       st.property = st.property===d.prop ? null : d.prop;
@@ -503,6 +525,8 @@
       delete st.price.general; render();
     } else if(d.lv){ st.price[d.for]=String(rangeOf(d.for)[d.lv]); updateSvc(d.for);
     } else if(d.step){ st.price[d.for]=String(Math.max(0,priceOf(d.for)+Number(d.step))); updateSvc(d.for);
+    } else if(d.act==="gcSeparate"){ st.gcSeparate=true; delete st.price.german_cockroach; render();
+    } else if(d.act==="gcInclude"){ st.gcSeparate=false; render();
     } else if(d.addon){ st.addon=d.addon; renderResult();
     } else if(d.place){ pick(PLACES[+d.place]);
     } else if(d.origin){
