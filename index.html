@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pestable Price Check</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f2a44">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Price Check">
+<meta name="format-detection" content="telephone=no">
+<style>
+  :root{
+    --bg:#eef2f7; --card:#ffffff; --ink:#102a43; --muted:#5a6b7f; --line:#d8e0ea; --chip:#f6f8fb;
+    --brand:#0f2a44; --brand-2:#163a5c;
+    --go:#16a34a; --go-ink:#ffffff; --go-soft:#e7f6ec;
+    --low:#d97706; --low-soft:#fdf1e1;
+    --mid:#16a34a; --mid-soft:#e7f6ec;
+    --high:#2563eb; --high-soft:#e6eefd;
+    --warn:#9a4a00; --warn-bg:#fff3dc;
+    --shadow:0 1px 2px rgba(16,42,67,.06),0 4px 14px rgba(16,42,67,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0a1424; --card:#122035; --ink:#eaf1f8; --muted:#9fb0c3; --line:#24364f; --chip:#18294180;
+      --brand:#0b1b30; --brand-2:#122a47;
+      --go:#22b35a; --go-soft:#123425;
+      --low:#f59e0b; --low-soft:#3a2a10;
+      --mid:#22c55e; --mid-soft:#123425;
+      --high:#60a5fa; --high-soft:#14284a;
+      --warn:#ffc078; --warn-bg:#3a2a12;
+      --shadow:none;
+    }
+    .step .num{background:#2b4c74}
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+  button{font:inherit;color:inherit;cursor:pointer}
+  main,.bar,header{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  input[type=text]{-webkit-user-select:text;user-select:text}
+
+  /* header */
+  header{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 14px}
+  .hd{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hd h1{margin:0;font-size:21px;letter-spacing:.2px}
+  .hd p{margin:2px 0 0;font-size:13px;color:#b9cde2}
+  .hd button{appearance:none;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:8px 14px;font-size:15px;font-weight:600;min-height:44px}
+
+  main{max-width:480px;margin:0 auto;padding:6px 12px 140px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}
+  .step{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+  .step .num{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none}
+  .step.done .num{background:var(--go)}
+  .step h2{margin:0;font-size:17px}
+  .step .hint{margin-left:auto;font-size:13px;color:var(--muted)}
+
+  /* tiles */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .tile{appearance:none;display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--chip);border-radius:14px;padding:10px;min-height:62px;text-align:left;line-height:1.15;font-size:16px;font-weight:600}
+  .tile .ic{font-size:24px;width:30px;text-align:center;flex:none}
+  .tile small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:3px}
+  .tile.on{border-color:var(--go);background:var(--go-soft)}
+  .tile.on .ic{filter:none}
+  .tile.on::after{content:"✓";margin-left:auto;width:24px;height:24px;flex:none;border-radius:50%;background:var(--go);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800}
+  .tile.center{justify-content:center;text-align:center;flex-direction:column;gap:0}
+  .tile.center.on::after{display:none}
+
+  /* location */
+  .loc{display:flex;gap:8px}
+  input[type=text]{font:inherit;font-size:20px;border:2px solid var(--line);border-radius:14px;padding:10px 12px;width:100%;background:var(--card);color:var(--ink);min-height:58px}
+  input[type=text]:focus{outline:none;border-color:var(--go)}
+  .post{max-width:140px;font-size:26px !important;font-weight:700;letter-spacing:4px;text-align:center}
+  .gps{flex:1;appearance:none;border:0;background:var(--go);color:#fff;border-radius:14px;font-size:17px;font-weight:700;min-height:58px;padding:6px 10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:999px;padding:10px 14px;font-size:16px;min-height:48px}
+  .chip small{color:var(--muted)}
+  .chip.on{background:var(--go);border-color:var(--go);color:#fff;font-weight:700}
+  .chip.on small{color:#e7f6ec}
+  .lbl{display:block;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:14px 0 8px}
+  .place{display:flex;align-items:center;gap:12px;background:var(--go-soft);border:2px solid var(--go);border-radius:14px;padding:10px 12px}
+  .place .pin{font-size:26px}
+  .place b{font-size:20px;display:block}
+  .place small{color:var(--muted);font-size:14px}
+  .place button{margin-left:auto;appearance:none;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;font-size:15px;min-height:44px}
+  .note{font-size:14px;color:var(--muted);margin:8px 0 0}
+
+  /* price slider */
+  .svc{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+  .svc:first-child{border-top:0;margin-top:0;padding-top:0}
+  .svc-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .svc-top .nm{font-size:17px;font-weight:700}
+  .svc-top .nm small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+  .pill{display:inline-flex;flex-direction:column;align-items:flex-end}
+  .pill .zone{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+  .pill .val{font-size:32px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+  .z-low .zone{background:var(--low-soft);color:var(--low)} .z-low .val{color:var(--low)}
+  .z-mid .zone{background:var(--mid-soft);color:var(--mid)} .z-mid .val{color:var(--mid)}
+  .z-high .zone{background:var(--high-soft);color:var(--high)} .z-high .val{color:var(--high)}
+  .z-out .zone{background:var(--warn-bg);color:var(--warn)} .z-out .val{color:var(--warn)}
+  .z-none .zone{display:none}
+
+  .slider{position:relative;margin:14px 4px 4px;height:44px}
+  .track{position:absolute;left:0;right:0;top:15px;height:14px;border-radius:999px;overflow:hidden;display:flex}
+  .track i{flex:1;opacity:.28}
+  .track i:nth-child(1){background:var(--low)} .track i:nth-child(2){background:var(--mid)} .track i:nth-child(3){background:var(--high)}
+  .fill{position:absolute;left:0;top:15px;height:14px;border-radius:999px;background:linear-gradient(90deg,var(--low),var(--mid) 50%,var(--high));background-size:var(--w,100%) 100%;pointer-events:none}
+  input[type=range]{position:absolute;inset:0;width:100%;height:44px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;touch-action:pan-y}
+  input[type=range]::-webkit-slider-runnable-track{height:44px;background:transparent}
+  input[type=range]::-moz-range-track{height:44px;background:transparent}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:40px;height:40px;margin-top:2px;border-radius:50%;background:#fff;border:4px solid var(--zc,var(--mid));box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#fff;border:4px solid var(--zc,var(--mid));box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  input[type=range]:focus{outline:none}
+  .marks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+  .marks button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:12px;padding:6px 4px;min-height:52px;line-height:1.15}
+  .marks button span{display:block;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+  .marks button b{font-size:16px}
+  .marks .m-low span{color:var(--low)} .marks .m-mid span{color:var(--mid)} .marks .m-high span{color:var(--high)}
+  .marks .m-low.on{border-color:var(--low);background:var(--low-soft)}
+  .marks .m-mid.on{border-color:var(--mid);background:var(--mid-soft)}
+  .marks .m-high.on{border-color:var(--high);background:var(--high-soft)}
+  .fine{display:grid;grid-template-columns:60px 1fr 60px;gap:8px;margin-top:10px}
+  .fine button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:12px;font-size:17px;font-weight:700;min-height:50px}
+  .fine input{text-align:center;font-size:20px;font-weight:700;min-height:50px}
+  .info{background:var(--high-soft);border:1.5px solid var(--high);border-radius:12px;padding:10px 12px;font-size:15px;margin-top:10px}
+  .info b{display:block;font-size:16px;margin-bottom:2px}
+  .info .chip{margin-top:8px;min-height:44px;font-size:15px}
+  .fu{display:flex;gap:10px;align-items:flex-start;background:var(--low-soft);border:1.5px solid var(--low);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:15px}
+  .fu .ic{font-size:22px} .fu b{display:block}
+  .warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:8px}
+
+  /* quote */
+  .hero{background:linear-gradient(135deg,var(--go),#0f8a3c);color:#fff;border-radius:16px;padding:14px 16px}
+  .hero .t{font-size:14px;font-weight:600;opacity:.9}
+  .hero .v{font-size:46px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+  .hero .s{font-size:14px;opacity:.92;margin-top:4px}
+  .hero.empty{background:var(--chip);color:var(--muted);border:2px dashed var(--line)}
+  .hero.empty .v{font-size:20px;font-weight:600}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .stat{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-size:20px;font-weight:800;margin-top:2px}
+  .stat .s{font-size:12px;color:var(--muted)}
+  .rangebar{margin-top:10px;background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .rangebar .ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
+  .rangebar .ends b{color:var(--ink);font-size:15px}
+  .rb{position:relative;height:12px;border-radius:999px;background:linear-gradient(90deg,var(--low),var(--mid),var(--high));opacity:.9}
+  .rb .dot{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;border:4px solid var(--ink)}
+  .rows{margin-top:8px}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:16px}
+  .row:last-child{border-bottom:0}
+  .row b{white-space:nowrap}
+  .row .sub{display:block;font-size:13px;color:var(--muted)}
+  .addon{margin-top:12px}
+  .addon .chip .tag{display:inline-block;margin-left:6px;font-size:11px;background:var(--low);color:#fff;border-radius:6px;padding:1px 6px;font-weight:800;vertical-align:middle}
+  .share{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+  .share a,.share button{appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;min-height:54px;border-radius:14px;border:0;text-decoration:none;font-size:16px;font-weight:700;color:#fff}
+  .share .c{background:var(--brand-2)} .share .x{background:#2563eb} .share .w{background:#1fa855}
+  details summary{cursor:pointer;font-weight:700;padding:4px 0;min-height:36px;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::-webkit-details-marker{display:none}
+  details summary::after{content:"＋";color:var(--muted)} details[open] summary::after{content:"－"}
+  .toggle{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:16px;min-height:44px}
+  .toggle input{width:24px;height:24px;accent-color:var(--go)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px 4px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .n{text-align:right;white-space:nowrap}
+  td.l{color:var(--low);font-weight:700} td.m{color:var(--mid);font-weight:700} td.h{color:var(--high);font-weight:700}
+
+  /* sticky total */
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--brand);color:#fff;padding:10px 14px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.22);z-index:10}
+  .bar-in{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .bar .lft{flex:1;min-width:0;font-size:13px;color:#b9cde2;line-height:1.3}
+  .bar .lft b{display:block;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar button{appearance:none;border:0;background:var(--go);color:#fff;border-radius:14px;padding:6px 16px;font-weight:800;font-size:26px;min-height:58px;min-width:120px;white-space:nowrap}
+  .bar button small{display:block;font-size:11px;font-weight:700;opacity:.9;letter-spacing:1px}
+  .toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:12px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;white-space:nowrap}
+  .toast.show{opacity:1}
+  footer{text-align:center;font-size:13px;color:var(--muted);padding:6px 16px}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div><h1>Pestable Price Check</h1><p>Quote fast. Know your low and high.</p></div>
+  <button type="button" id="resetAll">New quote</button>
+</div></header>
+
+<main>
+  <section class="card" id="cardWhere">
+    <div class="step" id="stepWhere"><span class="num">1</span><h2>Where's the job?</h2></div>
+    <div id="placeBox"></div>
+  </section>
+
+  <section class="card">
+    <div class="step" id="stepSvc"><span class="num">2</span><h2>What's the pest?</h2><span class="hint">tap all that apply</span></div>
+    <div class="grid2" id="svcChips"></div>
+  </section>
+
+  <section class="card">
+    <div class="step" id="stepProp"><span class="num">3</span><h2>Property</h2><span class="hint">sets general pest</span></div>
+    <div class="grid2" id="propChips"></div>
+  </section>
+
+  <section class="card" id="priceCard" hidden>
+    <div class="step done"><span class="num">4</span><h2>Slide to set the price</h2></div>
+    <div id="svcRows"></div>
+  </section>
+
+  <section class="card" id="quoteCard">
+    <div class="step"><span class="num">$</span><h2>Quote</h2></div>
+    <div id="out"></div>
+  </section>
+
+  <section class="card">
+    <details id="carBox">
+      <summary>Drive from, fuel and diesel</summary>
+      <span class="lbl">Measure the drive from</span>
+      <div class="grid2" id="originChips"></div>
+      <span class="lbl">Fuel use (litres per 100 km)</span>
+      <div class="grid3" id="lpChips"></div>
+      <span class="lbl">Diesel price ($ per litre)</span>
+      <input type="text" id="diesel" inputmode="decimal" autocomplete="off">
+      <label class="toggle"><input type="checkbox" id="returnTrip"> Count the trip back too</label>
+      <p class="note">VW Amarok V6: about 10 L/100 km on the motorway, 12 in traffic or loaded. The quote shows the cost at 10–12. Saved on this phone.</p>
+      <button class="chip" id="resetCar" type="button" style="margin-top:10px">Reset to defaults</button>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Price list</summary>
+      <table style="margin-top:8px" id="priceTable"></table>
+      <p class="note">General pest by property: the owner's ranges. Other services: what Pestable has charged, from 173 CRM bookings (Low ≈ 10th percentile, Medium = median, High ≈ 90th; jobs under $100 left out). Bed bugs has only 4 jobs.</p>
+    </details>
+  </section>
+  <footer>Estimate only. Confirm extras, access and heavy infestations on site.<br>Tap when parked, or hand it to a passenger.</footer>
+</main>
+
+<div class="bar"><div class="bar-in">
+  <div class="lft" id="barL"></div>
+  <button type="button" data-act="toQuote" id="barBtn"></button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= PRICES & SETTINGS: edit here ================= */
+  // From 173 CRM bookings (24 Nov 2026). lo ≈ 10th percentile, typ = median, hi ≈ 90th.
+  // lo/hi null = no history, so the technician types the price.
+  var SERVICES = [
+    {id:"general",          ic:"🏠", name:"General pest",       lo:150, typ:200, hi:250, note:"Roaches, spiders, ants"},
+    {id:"german_cockroach", ic:"🪳", name:"German cockroach",   lo:120, typ:200, hi:250, note:"Gel bait + follow-up"},
+    {id:"rodents",          ic:"🐀", name:"Rodents",            lo:120, typ:150, hi:200, note:"Rats and mice"},
+    {id:"end_of_lease",     ic:"🔑", name:"End of lease",       lo:120, typ:150, hi:200, note:"Fleas + certificate"},
+    {id:"bed_bugs",         ic:"🛏️", name:"Bed bugs",           lo:150, typ:185, hi:185, note:"Only 4 jobs on record", thin:true},
+    {id:"commercial",       ic:"🏢", name:"Commercial",         lo:null, typ:null, hi:null, note:"Type the price"},
+    {id:"other",            ic:"➕", name:"Other",              lo:null, typ:null, hi:null, note:"Type the price"}
+  ];
+  // General pest range by property (owner's figures). Medium = middle.
+  var PROPERTY = [
+    {id:"unit",   ic:"🏢", name:"Unit",          lo:120, hi:189},
+    {id:"granny", ic:"🛖", name:"Granny flat",   lo:150, hi:200},
+    {id:"single", ic:"🏠", name:"Single storey", lo:180, hi:289},
+    {id:"double", ic:"🏘️", name:"Double storey", lo:250, hi:300}
+  ];
+  var FLAT_ADDONS = [20, 30];
+  var SUGGEST_ADDON_KM = 30;      // one way; past this the fuel add-on is marked "suggested"
+  var STEP = 5;                   // slider and − / + move by this much
+  var BASE = {name:"Potts Hill", postcode:"2143", lat:-33.8854, lng:151.0219};
+  var VEHICLE_DEFAULTS = {litresPer100:11, dieselPerLitre:2.38, roadFactor:1.3, returnTrip:true};
+  var LP_RANGE = [10, 12];
+  // Drive time guide: first 10 road km at 35 km/h, the rest at 65 km/h; peak hour +50%.
+  var CITY_KMH = 35, OPEN_KMH = 65, CITY_KM = 10, PEAK = 1.5;
+  // German cockroach always needs a follow-up visit. When it's booked with general pest,
+  // the job is charged at the general pest price only (German cockroach is included).
+  var FOLLOWUP_TEXT = "Follow-up visit in 2–3 weeks";
+  var FOLLOWUP_FEE = 0;           // 0 = follow-up included in the price; set a $ amount to charge it
+  var BUSINESS = "Pestable";
+  /* ================================================================ */
+
+  // [suburb, postcode, lat, lng] for Sydney, Central Coast and Illawarra
+  var PLACES = [["Abbotsbury","2176",-33.875,150.862],["Abbotsford","2046",-33.8522,151.1273],["Acacia Gardens","2763",-33.7322,150.917],["Agnes Banks","2753",-33.6153,150.7162],["Airds","2560",-34.0916,150.8249],["Akuna Bay","2084",-33.644,151.237],["Alexandria","2015",-33.908,151.1903],["Alfords Point","2234",-33.9848,151.0214],["Allambie","2100",-33.7624,151.25],["Allambie Heights","2100",-33.7624,151.25],["Allawah","2218",-33.9749,151.1167],["Ambarvale","2560",-34.0833,150.8007],["Angus","2765",-33.6886,150.7817],["Annandale","2038",-33.8824,151.1724],["Annangrove","2156",-33.6525,150.941],["Appin","2560",-34.2,150.7833],["Appletree Flat","2330",-32.5057,150.8693],["Arcadia","2159",-33.6243,151.0445],["Arncliffe","2205",-33.9392,151.1478],["Arndell Park","2148",-33.79,150.876],["Artarmon","2064",-33.8086,151.184],["Ashbury","2193",-33.8997,151.1199],["Ashcroft","2168",-33.9145,150.8987],["Ashfield","2131",-33.8905,151.1255],["Asquith","2077",-33.689,151.105],["Auburn","2144",-33.8485,151.0297],["Auburn South","2144",-33.8485,151.03],["Audley","2232",-34.0731,151.0568],["Austinmer","2515",-34.3063,150.9345],["Austral","2179",-33.9311,150.7936],["Avalon","2107",-33.6303,151.33],["Avalon Beach","2107",-33.6303,151.3298],["Avoca Beach","2251",-33.465,151.435],["Avon","2574",-34.4254,150.6686],["Avondale","2530",-34.5263,150.7389],["Badgerys Creek","2555",-33.8787,150.7505],["Balarang","2529",-34.5568,150.834],["Balgowlah","2093",-33.7965,151.2585],["Balgowlah Heights","2093",-33.8072,151.2642],["Balgownie","2519",-34.3888,150.8776],["Balmain","2041",-33.859,151.1791],["Balmain East","2041",-33.8581,151.1902],["Balmoral","2571",-34.3153,150.5178],["Balmoral Village","2571",-34.3153,150.518],["Bangor","2234",-34.0191,151.0274],["Banksia","2216",-33.9478,151.1481],["Banksmeadow","2019",-33.9573,151.207],["Bankstown","2200",-33.9182,151.035],["Bankstown Aerodrome","2200",-33.92,151.0297],["Bankstown Airport","2200",-33.9246,150.998],["Bankstown North","2200",-33.9047,151.038],["Bankstown Square","2200",-33.9182,151.035],["Bannaby","2580",-34.4129,149.9081],["Bannister","2580",-34.6022,149.493],["Bar Point","2083",-33.5126,151.1623],["Barangaroo","2000",-33.8638,151.202],["Barden Ridge","2234",-34.032,151.01],["Bardia","2565",-33.9782,150.858],["Bardwell Park","2207",-33.9354,151.1254],["Bardwell Valley","2207",-33.937,151.133],["Bargo","2574",-34.3,150.5833],["Barrack Heights","2528",-34.565,150.8569],["Barrack Point","2528",-34.5625,150.8704],["Bass Hill","2197",-33.8991,150.9977],["Bateau Bay","2261",-33.382,151.485],["Baulkham Hills","2153",-33.7619,150.9929],["Baw Baw","2580",-34.7092,149.633],["Bay Village","2261",-33.376,151.4739],["Bayview","2104",-33.661,151.2889],["Beacon Hill","2100",-33.7522,151.256],["Beaconsfield","2015",-33.911,151.2],["Beaumont Hills","2155",-33.7,150.941],["Beecroft","2119",-33.7511,151.0652],["Belfield","2191",-33.9061,151.085],["Belimbla Park","2570",-34.0857,150.5385],["Bell","2786",-33.514,150.279],["Bella Vista","2153",-33.7386,150.9503],["Bellambi","2518",-34.3667,150.9167],["Bellevue Hill","2023",-33.8827,151.254],["Belmore","2192",-33.9178,151.0908],["Beloon","2787",-34.1703,150.3859],["Belrose","2085",-33.73,151.22],["Belrose West","2085",-33.739,151.2098],["Ben Buckler","2026",-33.8898,151.283],["Ben Bullen","2790",-33.24,150.0194],["Bensville","2251",-33.4986,151.3847],["Berala","2141",-33.8749,151.0307],["Berambing","2758",-33.5334,150.4438],["Berkeley","2506",-34.4794,150.8406],["Berkeley Vale","2261",-33.34,151.435],["Berkshire Park","2765",-33.6886,150.7817],["Berowra","2081",-33.628,151.148],["Berowra Creek","2082",-33.5293,151.139],["Berowra Heights","2082",-33.6133,151.138],["Berowra Waters","2082",-33.6023,151.1207],["Berrilee","2159",-33.6155,151.0981],["Beverley Park","2217",-33.979,151.1285],["Beverly Hills","2209",-33.9488,151.0804],["Bexley","2207",-33.9525,151.1227],["Bexley North","2207",-33.9418,151.1114],["Bexley South","2207",-33.9525,151.1227],["Bickley Vale","2570",-34.08,150.665],["Bidwill","2770",-33.7316,150.8231],["Big Ridge","2330",-32.5742,151.2263],["Big Yengo","2330",-32.9955,150.9915],["Bilgola","2107",-33.6445,151.3276],["Bilgola Beach","2107",-33.6445,151.328],["Bilgola Plateau","2107",-33.6429,151.314],["Bilpin","2758",-33.5,150.5333],["Bimlow","2787",-33.9982,150.3382],["Bindook","2787",-34.1992,150.1014],["Birchgrove","2041",-33.8528,151.1802],["Birrong","2143",-33.893,151.023],["Black Springs","2787",-33.8602,149.7365],["Blackbutt","2529",-34.5717,150.8383],["Blackett","2770",-33.7393,150.8127],["Blackheath","2785",-33.6356,150.2836],["Blackmans Flat","2790",-33.3629,150.0559],["Blacktown","2148",-33.7668,150.9053],["Blacktown Westpoint","2148",-33.7703,150.9059],["Blackwall","2256",-33.503,151.326],["Blair Athol","2560",-34.063,150.8],["Blairmount","2559",-34.0488,150.7873],["Blakehurst","2221",-33.9898,151.108],["Blaxcell","2142",-33.8504,151.0086],["Blaxland","2774",-33.75,150.6167],["Blaxland East","2774",-33.75,150.6167],["Blaxlands Ridge","2758",-33.4715,150.797],["Blenheim Road","2113",-33.7988,151.1337],["Bligh Park","2756",-33.638,150.799],["Blue Bay","2261",-33.353,151.501],["Blue Haven","2262",-33.211,151.5048],["Bobbin Head","2074",-33.7,151.148],["Bondi","2026",-33.892,151.261],["Bondi Beach","2026",-33.891,151.2777],["Bondi Junction","2022",-33.8914,151.2497],["Bondi Junction Plaza","2022",-33.8916,151.2505],["Bonnet Bay","2226",-34.0102,151.0524],["Bonnie Vale","2232",-34.0731,151.0568],["Bonnyrigg","2177",-33.8981,150.8901],["Bonnyrigg Heights","2177",-33.8911,150.8721],["Booker Bay","2257",-33.508,151.346],["Boronia Park","2111",-33.8257,151.1398],["Bossley Park","2176",-33.8634,150.8836],["Botany","2019",-33.9469,151.1973],["Bouddi","2251",-33.518,151.4],["Bow Bowing","2566",-34.0185,150.8382],["Bowen Mountain","2753",-33.5743,150.6278],["Bowenfels","2790",-33.5179,150.1127],["Bowmans Creek","2330",-32.2611,151.1079],["Box Head","2257",-33.5318,151.3547],["Box Hill","2765",-33.65,150.88],["Boxers Creek","2580",-34.7527,149.83],["Bradbury","2560",-34.0873,150.8163],["Bradfield","2556",-33.9163,150.734],["Breakfast Point","2137",-33.844,151.1129],["Brereton","2752",-33.9057,150.6145],["Brereton","2787",-33.9141,150.5067],["Bridgman","2330",-32.463,151.1899],["Brighton Le Sands","2216",-33.9591,151.152],["Brighton-Le-Sands","2216",-33.9591,151.1521],["Bringelly","2556",-33.9405,150.7331],["Brisbane Grove","2580",-34.7981,149.7199],["Broadway","2007",-33.8843,151.1982],["Broke","2330",-32.7443,151.0895],["Bronte","2024",-33.9053,151.2607],["Brooklyn","2083",-33.5484,151.215],["Brookvale","2100",-33.7653,151.2704],["Broughton Village","2534",-34.7419,150.75],["Brownlow Hill","2570",-34.0348,150.657],["Brownsville","2530",-34.4828,150.8101],["Bucketty","2250",-33.1067,151.1344],["Budgewoi","2262",-33.234,151.557],["Budgewoi Peninsula","2262",-33.2178,151.5854],["Buff Point","2262",-33.232,151.535],["Bulga","2330",-32.6497,151.0108],["Bullaburra","2784",-33.728,150.4167],["Bulli","2516",-34.3285,150.9046],["Bulli Tops","2516",-34.3154,150.896],["Bundeena","2230",-34.0834,151.1515],["Bungarribee","2767",-33.7778,150.864],["Bungonia","2580",-34.85,149.95],["Burragorang Valley","2570",-34.0586,150.3869],["Burraneer","2230",-34.07,151.1366],["Burwood","2134",-33.8799,151.1025],["Burwood Heights","2136",-33.8902,151.1052],["Burwood North","2134",-33.8799,151.1025],["Busby","2168",-33.9141,150.8825],["Buxton","2571",-34.2566,150.5335],["Cabarita","2137",-33.848,151.1148],["Cabramatta","2166",-33.8955,150.9384],["Cabramatta West","2166",-33.8947,150.915],["Caddens","2747",-33.7745,150.737],["Calga","2250",-33.432,151.218],["Camberwell","2330",-32.4807,151.0913],["Cambridge Gardens","2747",-33.738,150.721],["Cambridge Park","2747",-33.7483,150.7344],["Camden","2570",-34.0544,150.6958],["Camden Park","2570",-34.0965,150.6999],["Camden South","2570",-34.0854,150.7074],["Camellia","2142",-33.8194,151.0333],["Cammeray","2062",-33.8228,151.2146],["Campbelltown","2560",-34.0666,150.8196],["Campbelltown North","2560",-34.0612,150.8263],["Camperdown","2050",-33.8899,151.1767],["Campsie","2194",-33.9106,151.1025],["Canada Bay","2046",-33.8671,151.1139],["Canley Heights","2166",-33.885,150.9276],["Canley Vale","2166",-33.8864,150.946],["Canoelands","2157",-33.5082,151.0618],["Canterbury","2193",-33.9126,151.118],["Canton Beach","2263",-33.277,151.5472],["Caravan Head","2225",-33.9975,151.0886],["Careel Bay","2107",-33.6208,151.3219],["Caringbah","2229",-34.0452,151.1218],["Caringbah South","2229",-34.0529,151.12],["Carlingford","2118",-33.7799,151.0413],["Carlingford Court","2118",-33.777,151.0521],["Carlingford North","2118",-33.7648,151.0584],["Carlton","2218",-33.9685,151.1246],["Carnes Hill","2171",-33.9383,150.848],["Carramar","2163",-33.886,150.9644],["Carrick","2580",-34.7184,149.881],["Carrowbrook","2330",-32.2676,151.2886],["Carss Park","2221",-33.9872,151.1189],["Cartwright","2168",-33.9241,150.8915],["Castle Cove","2069",-33.7846,151.2064],["Castle Hill","2154",-33.7271,150.9947],["Castlecrag","2068",-33.8014,151.2201],["Castlereagh","2749",-33.6719,150.6784],["Casula","2170",-33.9504,150.9045],["Casula Mall","2170",-33.9481,150.8997],["Cataract","2560",-34.2938,150.8248],["Catherine Field","2557",-33.9833,150.76],["Cattai","2756",-33.5561,150.912],["Cawdor","2570",-34.0833,150.6833],["Cecil Hills","2171",-33.8877,150.8491],["Cecil Park","2178",-33.873,150.8382],["Centennial Park","2021",-33.8943,151.233],["Central Colo","2756",-33.4167,150.7833],["Central Macdonald","2775",-33.332,150.975],["Central Mangrove","2250",-33.299,151.235],["Charing Cross","2024",-33.9003,151.253],["Charmhaven","2263",-33.2269,151.4961],["Chatham Valley","2787",-33.8361,149.9052],["Chatsbury","2580",-34.5057,149.768],["Chatswood","2067",-33.7961,151.178],["Chatswood West","2067",-33.7967,151.1622],["Cheero Point","2083",-33.5101,151.192],["Cheltenham","2119",-33.7554,151.0781],["Cherrybrook","2126",-33.7287,151.0413],["Chester Hill","2162",-33.8784,151.0044],["Chifley","2036",-33.969,151.24],["Chippendale","2008",-33.8863,151.1999],["Chipping Norton","2170",-33.911,150.959],["Chiswick","2046",-33.8519,151.1361],["Chittaway Bay","2261",-33.3274,151.4392],["Chittaway Point","2261",-33.3211,151.445],["Chullora","2190",-33.8908,151.0475],["Church Point","2105",-33.6544,151.2791],["Claremont Meadows","2747",-33.779,150.753],["Clarence","2790",-33.24,150.0194],["Clarendon","2756",-33.6117,150.7871],["Clareville","2107",-33.6362,151.3101],["Claymore","2559",-34.0444,150.8096],["Clemton Park","2206",-33.9258,151.1046],["Cleveland","2530",-34.5017,150.7708],["Clifton","2515",-34.2594,150.9692],["Clontarf","2093",-33.8083,151.2534],["Clovelly","2031",-33.9121,151.2629],["Clovelly West","2031",-33.9115,151.2548],["Clyde","2142",-33.8326,151.0224],["Clydesdale","2330",-32.5678,151.2161],["Coalcliff","2508",-34.2457,150.9729],["Coasters Retreat","2108",-33.605,151.299],["Cobar Park","2790",-33.4647,150.1575],["Cobbitty","2570",-34.0167,150.6833],["Cogra Bay","2083",-33.5232,151.2285],["Colebee","2761",-33.721,150.855],["Coledale","2515",-34.2833,150.95],["Collaroy","2097",-33.73,151.3],["Collaroy Beach","2097",-33.7315,151.3002],["Collaroy Plateau","2097",-33.7293,151.29],["Collaroy Plateau West","2097",-33.7293,151.2904],["Colo","2756",-33.4167,150.8],["Colo Heights","2756",-33.369,150.722],["Colongra","2262",-33.207,151.543],["Colyton","2760",-33.7831,150.7955],["Combo","2330",-32.5511,151.1855],["Como","2226",-34.0045,151.0638],["Concord","2137",-33.855,151.1078],["Concord West","2138",-33.8463,151.0908],["Concord West Dc","2138",-33.8397,151.088],["Condell Park","2200",-33.925,151.0077],["Coniston","2500",-34.4383,150.8827],["Connells Point","2221",-33.9825,151.1002],["Constitution Hill","2145",-33.7945,150.976],["Coogee","2034",-33.919,151.2555],["Copacabana","2251",-33.49,151.435],["Cordeaux","2526",-34.4397,150.8343],["Cordeaux Heights","2526",-34.4397,150.8343],["Corney Town","2790",-33.4756,150.1771],["Cornwallis","2756",-33.592,150.812],["Corrimal","2518",-34.3667,150.8917],["Corrimal East","2518",-34.3764,150.9108],["Cottage Point","2084",-33.6209,151.2022],["Couridjah","2571",-34.2333,150.55],["Cowan","2081",-33.5879,151.1685],["Cranebrook","2749",-33.7209,150.713],["Cremorne","2090",-33.8265,151.2276],["Cremorne Junction","2090",-33.8294,151.2298],["Cremorne Point","2090",-33.8408,151.2279],["Crestwood","2153",-33.7425,150.968],["Cringila","2502",-34.4711,150.8719],["Cromer","2099",-33.7414,151.2823],["Cromer Heights","2099",-33.7414,151.282],["Cronulla","2230",-34.0574,151.1522],["Crows Nest","2065",-33.8261,151.205],["Crows Nest Dc","2065",-33.8261,151.205],["Croydon","2132",-33.8829,151.1141],["Croydon Park","2133",-33.8967,151.1083],["Cullen Bullen","2790",-33.3,150.0167],["Cumberland Reach","2756",-33.456,150.896],["Curl Curl","2096",-33.7721,151.2899],["Currans Hill","2567",-34.0408,150.7685],["Currawang","2580",-34.9464,149.4722],["Curraweela","2580",-34.2625,149.799],["Currawong Beach","2108",-33.5952,151.298],["Daceyville","2032",-33.9279,151.2235],["Daleys Point","2257",-33.503,151.347],["Dangar Island","2083",-33.5414,151.2381],["Dapto","2530",-34.4917,150.7917],["Dargan","2786",-33.49,150.2487],["Darkes Forest","2508",-34.23,150.9084],["Darling Harbour","2000",-33.8749,151.201],["Darling Island","2009",-33.8649,151.196],["Darling Point","2027",-33.8702,151.2375],["Darlinghurst","2010",-33.878,151.2204],["Darlington","2008",-33.8903,151.1966],["Darlington","2330",-32.5587,151.1614],["Davidson","2085",-33.738,151.193],["Davistown","2251",-33.482,151.36],["Dawes Point","2000",-33.856,151.207],["Dean Park","2761",-33.7333,150.85],["Dee Why","2099",-33.7544,151.2854],["Dee Why Beach","2099",-33.7532,151.296],["Denham Court","2565",-33.9844,150.8444],["Denistone","2114",-33.8008,151.0865],["Denistone East","2112",-33.7989,151.0995],["Denistone West","2114",-33.8007,151.0777],["Dharruk","2770",-33.7481,150.8159],["Diamond Bay","2030",-33.8611,151.28],["Doctors Gap","2790",-33.4921,150.1792],["Dolans Bay","2229",-34.0626,151.1264],["Dolls Point","2219",-33.9939,151.143],["Dombarton","2530",-34.4584,150.772],["Donovans Forest","2250",-33.3502,151.187],["Doonside","2767",-33.764,150.8697],["Double Bay","2028",-33.8775,151.2412],["Douglas Park","2569",-34.1925,150.704],["Dover Heights","2030",-33.8719,151.2784],["Doyalson","2262",-33.199,151.518],["Doyalson North","2262",-33.187,151.543],["Doyles Creek","2330",-32.512,150.804],["Drummoyne","2047",-33.8524,151.1549],["Duckmaloi","2787",-33.6965,149.9588],["Duffys Forest","2084",-33.6752,151.1979],["Dulwich Hill","2203",-33.9042,151.1374],["Dundas","2117",-33.804,151.0351],["Dundas Valley","2117",-33.7931,151.06],["Dunmore","2529",-34.6185,150.8202],["Dunolly","2330",-32.5552,151.1709],["Dural","2158",-33.682,151.029],["Dural","2330",-32.5798,150.8622],["Dural Dc","2158",-33.6822,151.028],["Dyrring","2330",-32.5168,151.2195],["Eagle Vale","2558",-34.0369,150.8114],["Earlwood","2206",-33.9224,151.1287],["East Corrimal","2518",-34.3764,150.9108],["East Gosford","2250",-33.432,151.351],["East Hills","2213",-33.964,150.9897],["East Killara","2071",-33.7559,151.1797],["East Kurrajong","2758",-33.5153,150.7678],["East Lindfield","2070",-33.7727,151.1873],["East Ryde","2113",-33.81,151.135],["Eastern Creek","2766",-33.8072,150.8515],["Eastgardens","2036",-33.946,151.225],["Eastlakes","2018",-33.922,151.2073],["Eastwood","2122",-33.7904,151.0817],["Ebenezer","2756",-33.5318,150.8679],["Edensor Park","2176",-33.8809,150.8752],["Edgecliff","2027",-33.88,151.2357],["Edith","2787",-33.7963,149.914],["Elanora Heights","2101",-33.701,151.2789],["Elderslie","2570",-34.0546,150.7125],["Elizabeth Bay","2011",-33.8714,151.2284],["Elizabeth Hills","2171",-33.9001,150.848],["Ellis Lane","2570",-34.034,150.675],["Elvina Bay","2105",-33.6395,151.2778],["Emerton","2770",-33.75,150.8027],["Empire Bay","2257",-33.49,151.36],["Emu Heights","2750",-33.7352,150.6503],["Emu Plains","2750",-33.7521,150.6597],["Enfield","2136",-33.8906,151.0925],["Enfield South","2133",-33.8906,151.0925],["Engadine","2233",-34.0657,151.0127],["Englorie Park","2560",-34.0807,150.7948],["Enmore","2042",-33.9007,151.1677],["Epping","2121",-33.7746,151.0788],["Erina","2250",-33.44,151.393],["Erina Fair","2250",-33.4373,151.3925],["Erina Heights","2260",-33.4256,151.41],["Ermington","2115",-33.8133,151.0617],["Erskine Park","2759",-33.8132,150.8014],["Erskineville","2043",-33.9024,151.1855],["Eschol Park","2558",-34.0304,150.8094],["Essington","2787",-33.7526,149.747],["Ettalong Beach","2257",-33.515,151.335],["Eveleigh","2015",-33.895,151.191],["Fairfield","2165",-33.8706,150.9564],["Fairfield East","2165",-33.8718,150.9735],["Fairfield Heights","2165",-33.8685,150.9424],["Fairfield West","2165",-33.8711,150.9232],["Fairlight","2094",-33.7941,151.2729],["Fairy Meadow","2519",-34.4006,150.8917],["Falbrook","2330",-32.4467,151.1461],["Farmborough Heights","2526",-34.4556,150.8194],["Faulconbridge","2776",-33.6863,150.5501],["Fern Gully","2330",-32.5512,151.2015],["Fernances","2775",-33.191,151.0151],["Fernhill","2519",-34.3836,150.8893],["Fiddletown","2159",-33.6026,151.0498],["Figtree","2525",-34.4319,150.8435],["Five Dock","2046",-33.8693,151.1296],["Flinders","2529",-34.58,150.846],["Fordwich","2330",-32.7096,151.0588],["Forest Glen","2157",-33.5505,151.0197],["Forest Lodge","2037",-33.884,151.1815],["Forestville","2087",-33.7613,151.2113],["Forresters Beach","2260",-33.407,151.476],["Fountaindale","2258",-33.34,151.393],["Foxground","2534",-34.7174,150.7706],["Freemans Reach","2756",-33.5615,150.7979],["Frenchs Forest","2086",-33.7473,151.2248],["Frenchs Forest East","2086",-33.7508,151.2407],["Freshwater","2096",-33.7749,151.288],["Gables","2765",-33.6886,150.7817],["Galston","2159",-33.65,151.043],["Ganbenang","2790",-33.6559,150.1204],["Garie","2232",-34.1692,151.0695],["Garland Valley","2330",-32.9164,150.7282],["Georges Hall","2198",-33.9063,150.986],["Gerringong","2534",-34.7391,150.825],["Gerroa","2534",-34.7699,150.8131],["Gilead","2560",-34.141,150.7924],["Gingkin","2787",-33.8992,149.9429],["Girraween","2145",-33.8013,150.943],["Gladesville","2111",-33.8302,151.1268],["Glebe","2037",-33.8798,151.187],["Gledswood Hills","2557",-34.0117,150.78],["Glen Alpine","2560",-34.09,150.785],["Glenbrook","2773",-33.7667,150.6194],["Glendenning","2761",-33.7461,150.8536],["Glendenning Dc","2761",-33.7492,150.852],["Glendon","2330",-32.5852,151.286],["Glendon Brook","2330",-32.4972,151.407],["Glendonbrook","2330",-32.4972,151.407],["Glenfield","2167",-33.9691,150.8929],["Glenhaven","2156",-33.7055,151.0033],["Glenmore","2570",-34.0737,150.5995],["Glenmore Park","2745",-33.79,150.676],["Glennies Creek","2330",-32.4494,151.1167],["Glenning Valley","2261",-33.348,151.418],["Glenorie","2157",-33.6022,151.0025],["Glenquarie","2564",-33.9857,150.8918],["Glenridding","2330",-32.5947,151.1578],["Glenwood","2768",-33.7399,150.9386],["Glenworth Valley","2250",-33.4007,151.2028],["Glossodia","2756",-33.5343,150.7823],["Goarra","2232",-34.0731,151.0568],["Golden Grove","2008",-33.8933,151.189],["Golspie","2580",-34.2543,149.6734],["Good Forest","2790",-33.581,150.125],["Goorangoola","2330",-32.2915,151.199],["Gordon","2072",-33.7551,151.1549],["Gore Hill","2065",-33.8269,151.196],["Gorokan","2263",-33.2537,151.5107],["Gosford","2250",-33.4267,151.3417],["Gosford West","2250",-33.415,151.318],["Goulburn","2580",-34.7479,149.7277],["Goulburn Dc","2580",-34.7553,149.718],["Goulburn North","2580",-34.7445,149.7339],["Gouldsville","2330",-32.5805,151.0908],["Gowrie","2330",-32.5607,151.1461],["Grantham Farm","2765",-33.6886,150.7817],["Granville","2142",-33.8353,151.0066],["Grasmere","2570",-34.057,150.667],["Grays Point","2232",-34.0551,151.0749],["Great Mackerel Beach","2108",-33.5917,151.3008],["Green Point","2251",-33.465,151.36],["Green Valley","2168",-33.906,150.8668],["Greenacre","2190",-33.9078,151.0644],["Greendale","2745",-33.92,150.67],["Greenfield Park","2176",-33.8768,150.8882],["Greengrove","2250",-33.3788,151.1578],["Greenhills Beach","2230",-34.0347,151.165],["Greenlands","2330",-32.3927,151.1727],["Greenwich","2065",-33.833,151.1836],["Greenwich Park","2580",-34.5967,149.9219],["Gregory Hills","2557",-34.0308,150.777],["Greystanes","2145",-33.8297,150.9489],["Grose Vale","2753",-33.584,150.674],["Grose Wold","2753",-33.5986,150.6847],["Guildford","2161",-33.8557,150.9951],["Guildford West","2161",-33.8507,150.9631],["Gundary","2580",-34.8318,149.8021],["Gunderman","2775",-33.4326,151.0497],["Gurnang","2787",-34.0592,149.822],["Gwynneville","2500",-34.4161,150.8839],["Gymea","2227",-34.0333,151.0856],["Gymea Bay","2227",-34.0496,151.0864],["Haberfield","2045",-33.8786,151.1374],["Halekulani","2262",-33.219,151.551],["Hambledon Hill","2330",-32.5996,151.1258],["Hammondville","2170",-33.9523,150.9602],["Hampton","2790",-33.6474,150.037],["Harbord","2096",-33.7749,151.2878],["Hardys Bay","2257",-33.5274,151.3546],["Harrington Park","2567",-34.0277,150.7308],["Harris Park","2150",-33.8219,151.0108],["Hartley","2790",-33.5279,150.1648],["Hartley Vale","2790",-33.5384,150.2285],["Hassall Grove","2761",-33.7309,150.8406],["Hassans Walls","2790",-33.5064,150.1561],["Hawkesbury Heights","2777",-33.6667,150.65],["Haymarket","2000",-33.8809,151.2029],["Haywards Bay","2530",-34.5424,150.7955],["Hazelbrook","2779",-33.7284,150.4573],["Hazelgrove","2787",-33.6348,149.8894],["Heathcote","2233",-34.0851,151.0081],["Hebden","2330",-32.3239,151.069],["Hebersham","2770",-33.746,150.8246],["Heckenberg","2168",-33.9107,150.8889],["Helensburgh","2508",-34.1833,151.0],["Henley","2111",-33.8425,151.1347],["Hermitage Flat","2790",-33.477,150.146],["Higher Macdonald","2775",-33.213,150.9311],["Hillsdale","2036",-33.9549,151.2287],["Hillside","2157",-33.601,150.976],["Hinchinbrook","2168",-33.9165,150.8639],["Hmas Kuttabul","2011",-33.8646,151.225],["Hmas Platypus","2060",-33.8428,151.217],["Hmas Rushcutters","2027",-33.8743,151.2285],["Hmas Waterhen","2060",-33.8417,151.195],["Hmas Watson","2030",-33.8373,151.2817],["Hobartville","2753",-33.6153,150.7162],["Holgate","2250",-33.407,151.41],["Holroyd","2142",-33.831,150.997],["Holsworthy","2173",-33.9565,150.9499],["Homebush","2140",-33.8586,151.0792],["Homebush Bay","2127",-33.8322,151.0806],["Homebush South","2140",-33.8586,151.0792],["Homebush West","2140",-33.8586,151.0792],["Horningsea Park","2171",-33.944,150.844],["Hornsby","2077",-33.7046,151.0987],["Hornsby Heights","2077",-33.6722,151.0988],["Horsfield Bay","2256",-33.492,151.304],["Horsley","2530",-34.4916,150.7708],["Horsley Park","2175",-33.8481,150.8493],["Howes Valley","2330",-32.8483,150.8359],["Howick","2330",-32.4322,150.9333],["Hoxton Park","2171",-33.9338,150.8528],["Hunters Hill","2110",-33.8337,151.1437],["Hunters Hill West","2110",-33.8337,151.144],["Hunterview","2330",-32.5402,151.1782],["Huntingwood","2148",-33.799,150.885],["Huntley","2530",-34.4971,150.7413],["Huntleys Cove","2111",-33.8385,151.1381],["Huntleys Point","2111",-33.839,151.147],["Hurlstone Park","2193",-33.9106,151.1292],["Hurstville","2220",-33.9646,151.101],["Hurstville Grove","2220",-33.9797,151.093],["Hurstville Westfield","2220",-33.9662,151.1052],["Illawong","2234",-34.0006,151.0359],["Ingleburn","2565",-34.0044,150.863],["Ingleside","2101",-33.6823,151.2631],["Jamisontown","2750",-33.7683,150.6724],["Jannali","2226",-34.017,151.0652],["Jaunter","2787",-33.9814,149.884],["Jenolan","2790",-33.8246,150.0054],["Jenolan Caves","2790",-33.8228,150.024],["Jerrong","2580",-34.1728,149.8629],["Jerrys Plains","2330",-32.5102,150.9148],["Jibbon","2232",-34.0731,151.0568],["Jooriland","2787",-34.2273,150.1979],["Jordan Springs","2747",-33.724,150.728],["Kanahooka","2530",-34.4917,150.8083],["Kanangra","2787",-33.9885,150.0884],["Kangaroo Point","2224",-34.002,151.096],["Kangy Angy","2258",-33.324,151.385],["Kanimbla","2790",-33.6377,150.1995],["Kareela","2232",-34.015,151.0805],["Kariong","2250",-33.4407,151.2883],["Katoomba","2780",-33.7125,150.3119],["Katoomba Dc","2780",-33.7125,150.312],["Kearns","2558",-34.0237,150.8063],["Kedumba","2782",-33.7206,150.3791],["Kedumba","2787",-33.865,150.4029],["Keiraville","2500",-34.4073,150.8755],["Kellyville","2155",-33.7111,150.9551],["Kellyville Ridge","2155",-33.703,150.919],["Kembla Grange","2526",-34.4705,150.797],["Kembla Heights","2526",-34.4306,150.8069],["Kemblawarra","2505",-34.4922,150.8897],["Kemps Creek","2178",-33.8746,150.7987],["Kensington","2033",-33.9096,151.219],["Kenthurst","2156",-33.6693,151.0016],["Kentlyn","2560",-34.0519,150.878],["Killara","2071",-33.7686,151.1635],["Killarney Heights","2087",-33.7742,151.2155],["Killarney Vale","2261",-33.365,151.46],["Killcare","2257",-33.5195,151.3589],["Killcare Heights","2257",-33.5239,151.3764],["Kincumber","2251",-33.465,151.393],["Kincumber South","2251",-33.482,151.368],["Kings Cross","2011",-33.8734,151.224],["Kings Langley","2147",-33.75,150.9345],["Kings Park","2148",-33.7457,150.9047],["Kingsdale","2580",-34.7005,149.7004],["Kingsdene","2118",-33.7842,151.0287],["Kingsford","2032",-33.9246,151.2277],["Kingsgrove","2208",-33.9379,151.0995],["Kingsgrove Dc","2208",-33.9379,151.0995],["Kingsway West","2208",-33.9511,151.092],["Kingswood","2747",-33.759,150.72],["Kirkham","2570",-34.039,150.709],["Kirrawee","2232",-34.0357,151.0708],["Kirrawee Dc","2232",-34.034,151.071],["Kirribilli","2061",-33.8491,151.2175],["Kogarah","2217",-33.9644,151.1373],["Kogarah Bay","2217",-33.9834,151.1217],["Komungla","2580",-34.8535,149.651],["Koolewong","2256",-33.466,151.318],["Koonawarra","2530",-34.5017,150.8083],["Kowmung","2787",-33.9477,150.2473],["Kulnura","2250",-33.232,151.218],["Kurmond","2757",-33.5518,150.7011],["Kurnell","2231",-34.0194,151.1986],["Kurraba Point","2089",-33.843,151.223],["Kurrajong","2758",-33.55,150.6667],["Kurrajong Heights","2758",-33.55,150.6667],["Kurrajong Hills","2758",-33.5333,150.65],["Kyeemagh","2216",-33.9483,151.1571],["Kyle Bay","2221",-33.9911,151.1003],["La Perouse","2036",-33.9888,151.232],["Lake Bathurst","2580",-35.0523,149.6968],["Lake Haven","2263",-33.24,151.501],["Lake Heights","2502",-34.4854,150.866],["Lake Illawarra","2528",-34.5417,150.8583],["Lakemba","2195",-33.92,151.0771],["Lakemba Dc","2195",-33.92,151.077],["Lakesland","2572",-34.1667,150.5333],["Lalor Park","2147",-33.7666,150.9277],["Lane Cove","2066",-33.8148,151.1664],["Lane Cove North","2066",-33.8063,151.1665],["Lane Cove West","2066",-33.8115,151.1527],["Lansdowne","2163",-33.895,150.9742],["Lansvale","2166",-33.9069,150.9686],["Lapstone","2773",-33.774,150.637],["Laughtondale","2775",-33.43,151.029],["Lavender Bay","2060",-33.8436,151.207],["Lawson","2783",-33.7256,150.437],["Leets Vale","2756",-33.432,150.951],["Leets Vale","2775",-33.432,150.951],["Lefevres Corner","2570",-34.0253,150.629],["Leichhardt","2040",-33.8837,151.157],["Leighwood","2580",-34.2624,149.6907],["Lemington","2330",-32.4823,150.9564],["Len Waters Estate","2171",-33.9143,150.854],["Leonay","2750",-33.7651,150.6457],["Leppington","2179",-33.965,150.801],["Lethbridge Park","2770",-33.7374,150.8013],["Leumeah","2560",-34.0555,150.8333],["Leura","2780",-33.7167,150.3333],["Lewisham","2049",-33.8949,151.1444],["Liberty Grove","2138",-33.8417,151.0836],["Lidcombe","2141",-33.8719,151.0413],["Lidcombe North","2141",-33.8719,151.0413],["Lidsdale","2790",-33.3696,150.0802],["Lilli Pilli","2229",-34.0683,151.1158],["Lilyfield","2040",-33.8743,151.1647],["Lilyvale","2508",-34.1783,151.0233],["Linden","2778",-33.7156,150.4961],["Lindfield","2070",-33.7788,151.1693],["Lindfield West","2070",-33.7816,151.1491],["Linley Point","2066",-33.8274,151.1498],["Lisarow","2250",-33.382,151.376],["Lithgow","2790",-33.4827,150.157],["Lithgow Dc","2790",-33.4829,150.14],["Little Bay","2036",-33.9805,151.243],["Little Hartley","2790",-33.5903,150.1937],["Little Wobby","2256",-33.545,151.2505],["Littleton","2790",-33.4958,150.1402],["Liverpool","2170",-33.9286,150.918],["Liverpool South","2170",-33.9286,150.918],["Liverpool Westfield","2170",-33.9192,150.9238],["Llandilo","2747",-33.7061,150.7453],["Loftus","2232",-34.0465,151.0471],["Londonderry","2753",-33.6485,150.7355],["Long Jetty","2261",-33.357,151.485],["Long Point","2330",-32.5652,151.1228],["Long Point","2564",-34.012,150.897],["Long Reef","2097",-33.742,151.317],["Longueville","2066",-33.8331,151.1649],["Lovett Bay","2105",-33.6297,151.2817],["Lower Boro","2580",-35.1479,149.772],["Lower Hawkesbury","2775",-33.443,151.043],["Lower Macdonald","2775",-33.3653,150.9511],["Lower Mangrove","2250",-33.415,151.16],["Lower Portland","2756",-33.442,150.879],["Lowther","2790",-33.6283,150.1279],["Lucas Heights","2234",-34.049,150.975],["Luddenham","2745",-33.8807,150.7146],["Lugarno","2210",-33.9847,151.0435],["Lurnea","2170",-33.9326,150.9008],["Macarthur Square","2560",-34.0749,150.7979],["Macmasters Beach","2251",-33.4967,151.4114],["Macquarie Centre","2113",-33.7764,151.12],["Macquarie Fields","2564",-33.9943,150.8876],["Macquarie Links","2565",-33.982,150.874],["Macquarie Park","2113",-33.7935,151.1345],["Maddens Plains","2508",-34.2485,150.9414],["Magenta","2261",-33.299,151.543],["Maianbar","2230",-34.0765,151.1272],["Maison Dieu","2330",-32.5508,151.1048],["Malabar","2036",-33.9656,151.2487],["Maldon","2571",-34.1986,150.6347],["Manahan","2200",-33.9203,151.0052],["Mangerton","2500",-34.4328,150.8711],["Mangrove Creek","2250",-33.3575,151.1452],["Mangrove Mountain","2250",-33.299,151.193],["Manly","2095",-33.806,151.2948],["Manly East","2095",-33.806,151.2948],["Manly Vale","2093",-33.783,151.2622],["Maraylya","2765",-33.5977,150.9161],["Marayong","2148",-33.7495,150.8929],["Marley","2232",-34.0731,151.0568],["Marlow","2775",-33.468,151.166],["Maroota","2756",-33.454,150.9889],["Maroubra","2035",-33.9495,151.2437],["Maroubra South","2035",-33.9495,151.2437],["Marrangaroo","2790",-33.4333,150.1167],["Marrickville","2204",-33.9086,151.1549],["Marrickville Metro","2204",-33.9069,151.1714],["Marrickville South","2204",-33.9088,151.1479],["Marsden Park","2765",-33.6891,150.8029],["Marsfield","2122",-33.7801,151.1029],["Marshall Mount","2530",-34.545,150.7367],["Mascot","2020",-33.9296,151.1946],["Matcham","2250",-33.415,151.426],["Matraville","2036",-33.9613,151.2315],["Mayfield","2580",-35.1868,149.752],["Mayfield","2787",-33.64,149.7751],["Mays Hill","2145",-33.8206,150.9882],["Mcalister","2580",-34.4493,149.753],["Mccarrs Creek","2105",-33.643,151.277],["Mcdougalls Hill","2330",-32.547,151.1432],["Mcgraths Hill","2756",-33.6194,150.843],["Mckellars Park","2790",-33.4704,150.1525],["Mcmahons Point","2060",-33.8452,151.2043],["Meadowbank","2114",-33.8169,151.0833],["Medlow Bath","2780",-33.6807,150.295],["Megalong","2785",-33.7228,150.2205],["Megalong Valley","2785",-33.7228,150.22],["Mellong","2756",-33.1688,150.682],["Melonba","2765",-33.6886,150.7817],["Melrose Park","2114",-33.8146,151.0719],["Menai","2234",-34.0118,151.0089],["Menai Central","2234",-34.017,151.0116],["Menangle","2568",-34.1381,150.7098],["Menangle Park","2563",-34.1029,150.7505],["Merrylands","2160",-33.8358,150.9865],["Merrylands West","2160",-33.8374,150.9617],["Middle Arm","2580",-34.6188,149.732],["Middle Cove","2068",-33.7938,151.2086],["Middle Dural","2158",-33.6409,151.018],["Middle Falbrook","2330",-32.4467,151.1461],["Middleton Grange","2171",-33.915,150.842],["Milbrodale","2330",-32.6937,150.9984],["Miller","2168",-33.9268,150.872],["Millers Point","2000",-33.8608,151.2028],["Milperra","2214",-33.9405,150.9802],["Milsons Passage","2083",-33.517,151.176],["Milsons Point","2061",-33.8477,151.212],["Minchinbury","2770",-33.7896,150.8369],["Minto","2566",-34.0265,150.8507],["Minto Dc","2566",-34.0291,150.85],["Minto Heights","2566",-34.031,150.8743],["Miranda","2228",-34.0299,151.1055],["Mirannie","2330",-32.4373,151.367],["Missenden Road","2050",-33.8897,151.1822],["Mitchells Flat","2330",-32.555,151.2818],["Mogo Creek","2775",-33.1869,151.0409],["Mona Vale","2103",-33.6757,151.3064],["Monash Park","2111",-33.8233,151.127],["Monterey","2217",-33.9738,151.1479],["Mooney Mooney","2083",-33.523,151.201],["Mooney Mooney Creek","2250",-33.4379,151.2465],["Moore Park","2021",-33.8953,151.2215],["Moorebank","2170",-33.9397,150.925],["Morning Bay","2105",-33.627,151.287],["Morning Bay","2108",-33.627,151.287],["Mortdale","2223",-33.9693,151.0697],["Mortlake","2137",-33.8406,151.1061],["Morts Estate","2790",-33.4678,150.1691],["Mosman","2088",-33.8304,151.2394],["Mount Annan","2567",-34.065,150.76],["Mount Colah","2079",-33.6709,151.1258],["Mount Druitt","2770",-33.7722,150.8194],["Mount Druitt Village","2770",-33.7722,150.8194],["Mount Elliot","2250",-33.401,151.388],["Mount Fairy","2580",-35.1901,149.5988],["Mount Hunter","2570",-34.0667,150.6333],["Mount Irvine","2786",-33.4849,150.4631],["Mount Keira","2500",-34.4,150.85],["Mount Kembla","2526",-34.442,150.809],["Mount Kuring-Gai","2080",-33.6501,151.1345],["Mount Lambie","2790",-33.4505,149.9905],["Mount Lewis","2190",-33.915,151.051],["Mount Lewis","2200",-33.915,151.051],["Mount Olive","2330",-32.414,151.2104],["Mount Olive","2787",-33.6161,149.9564],["Mount Ousley","2519",-34.4003,150.8806],["Mount Pleasant","2519",-34.3965,150.8682],["Mount Pritchard","2170",-33.898,150.901],["Mount Rae","2580",-34.4739,149.708],["Mount Riverview","2774",-33.7333,150.6333],["Mount Royal","2330",-32.2479,151.276],["Mount Saint Thomas","2500",-34.4412,150.8718],["Mount Thorley","2330",-32.6165,151.1521],["Mount Tomah","2758",-33.55,150.4167],["Mount Vernon","2178",-33.857,150.81],["Mount Victoria","2786",-33.5833,150.25],["Mount Warrigal","2528",-34.5467,150.8433],["Mount Werong","2787",-34.0831,149.9124],["Mount White","2250",-33.4567,151.1928],["Mount Wilson","2786",-33.5063,150.3791],["Mountain Lagoon","2758",-33.4464,150.6276],["Mowbray Park","2571",-34.153,150.553],["Mozart","2787",-33.8266,149.8233],["Mulgoa","2745",-33.8461,150.6525],["Mulgrave","2756",-33.615,150.828],["Mummel","2580",-34.6611,149.5425],["Myrtleville","2580",-34.4676,149.818],["Narara","2250",-33.3921,151.3327],["Narellan","2567",-34.0451,150.7371],["Narellan Dc","2567",-34.0451,150.737],["Narellan Vale","2567",-34.0504,150.7483],["Naremburn","2065",-33.8177,151.2011],["Narrabeen","2101",-33.7231,151.2952],["Narrabeen Peninsula","2101",-33.7104,151.301],["Narraweena","2099",-33.7486,151.2678],["Narwee","2209",-33.9473,151.0707],["Nattai","2570",-34.0639,150.4675],["Nelson","2765",-33.6457,150.922],["Neutral Bay","2089",-33.8339,151.2188],["Neutral Bay Junction","2089",-33.8311,151.2227],["Newington","2127",-33.839,151.055],["Newnes","2790",-33.195,150.2413],["Newnes Plateau","2790",-33.3253,150.272],["Newport","2106",-33.6567,151.3123],["Newport Beach","2106",-33.6533,151.3235],["Newtown","2042",-33.8978,151.1785],["Niagara Park","2250",-33.382,151.351],["Nirimba Fields","2763",-33.7322,150.917],["Norah Head","2263",-33.2833,151.5667],["Noraville","2263",-33.2689,151.5559],["Normanhurst","2076",-33.7245,151.097],["North Avoca","2260",-33.457,151.435],["North Balgowlah","2093",-33.7856,151.2496],["North Bondi","2026",-33.8879,151.2808],["North Curl Curl","2099",-33.7645,151.2973],["North Epping","2121",-33.7623,151.101],["North Gosford","2250",-33.415,151.351],["North Kellyville","2155",-33.6852,150.953],["North Manly","2100",-33.7754,151.2689],["North Narrabeen","2101",-33.7065,151.2884],["North Parramatta","2151",-33.8003,151.0042],["North Richmond","2754",-33.5818,150.7151],["North Rocks","2151",-33.7751,151.0238],["North Ryde","2113",-33.7932,151.1198],["North St Ives","2075",-33.7214,151.168],["North St Marys","2760",-33.749,150.782],["North Strathfield","2137",-33.8604,151.0886],["North Sydney","2055",-33.8396,151.2054],["North Sydney","2060",-33.8396,151.2054],["North Sydney Shoppingworld","2060",-33.8377,151.2082],["North Turramurra","2074",-33.7049,151.149],["North Wahroonga","2076",-33.701,151.126],["North Willoughby","2068",-33.795,151.204],["North Wollongong","2500",-34.4082,150.8987],["Northbridge","2063",-33.8124,151.219],["Northmead","2152",-33.7897,150.9921],["Northwood","2066",-33.8281,151.1762],["Norway","2787",-33.7617,149.7931],["Norwest","2153",-33.7619,150.9929],["Oak Flats","2529",-34.5619,150.8189],["Oak Flats Dc","2529",-34.5651,150.819],["Oakdale","2570",-34.0817,150.5011],["Oakey Park","2790",-33.24,150.0194],["Oakhurst","2761",-33.7386,150.836],["Oakville","2765",-33.6222,150.8669],["Oaky Park","2790",-33.463,150.185],["Oatlands","2117",-33.7963,151.0263],["Oatley","2223",-33.9812,151.0748],["Obanvale","2330",-32.5151,151.1607],["Oberon","2787",-33.7167,149.8667],["Old Guildford","2161",-33.8658,150.9835],["Old Toongabbie","2146",-33.787,150.966],["Oran Park","2570",-34.003,150.743],["Orangeville","2570",-34.0264,150.5937],["Orchard Hills","2748",-33.8181,150.7331],["Osborne Park","2066",-33.818,151.177],["Otford","2508",-34.2167,151.0],["Ourimbah","2258",-33.3561,151.3694],["Oxford Falls","2100",-33.7352,151.2469],["Oxley Park","2760",-33.7709,150.7934],["Oyster Bay","2225",-34.0017,151.0792],["Paddington","2021",-33.885,151.2262],["Padstow","2211",-33.9505,151.0309],["Padstow Heights","2211",-33.973,151.035],["Pagewood","2035",-33.9406,151.2155],["Paling Yards","2580",-34.1197,149.81],["Palm Beach","2108",-33.6011,151.3217],["Palm Grove","2258",-33.324,151.31],["Palmdale","2258",-33.332,151.368],["Palona","2232",-34.0731,151.0568],["Panania","2213",-33.9579,151.002],["Paradise Beach","2107",-33.6244,151.3168],["Parkesbourne","2580",-34.7572,149.5527],["Parklea","2768",-33.7291,150.919],["Parliament House","2000",-33.8659,151.2172],["Parramatta","2150",-33.8136,151.0034],["Parramatta Westfield","2150",-33.8174,151.0017],["Patonga","2256",-33.5494,151.2706],["Peakhurst","2210",-33.9654,151.0502],["Peakhurst Dc","2210",-33.9654,151.05],["Peakhurst Heights","2210",-33.9817,151.0511],["Pearl Beach","2256",-33.542,151.308],["Peats Ridge","2250",-33.332,151.235],["Pemulwuy","2145",-33.817,150.926],["Pendle Hill","2145",-33.8074,150.9552],["Pennant Hills","2120",-33.7389,151.0724],["Penrith","2750",-33.7507,150.6877],["Penrith Plaza","2750",-33.7513,150.6935],["Penrith South","2750",-33.7715,150.7011],["Penshurst","2222",-33.9623,151.085],["Perrys Crossing","2775",-33.1986,150.9678],["Petersham","2049",-33.8962,151.1541],["Petersham North","2049",-33.8962,151.1541],["Pheasants Nest","2574",-34.256,150.6356],["Phegans Bay","2256",-33.488,151.31],["Phillip Bay","2036",-33.9781,151.2321],["Picketts Valley","2251",-33.457,151.41],["Picnic Point","2213",-33.9693,151.0062],["Picton","2571",-34.1833,150.6],["Pitt Town","2756",-33.5817,150.8668],["Pitt Town Bottoms","2756",-33.5841,150.8464],["Pleasure Point","2172",-33.9678,150.978],["Plumpton","2761",-33.7515,150.8413],["Point Clare","2250",-33.44,151.326],["Point Frederick","2250",-33.4441,151.34],["Point Piper","2027",-33.8704,151.251],["Pomeroy","2580",-34.6729,149.513],["Port Botany","2036",-33.976,151.218],["Port Hacking","2229",-34.069,151.1227],["Port Kembla","2505",-34.4745,150.89],["Porters Retreat","2787",-34.0266,149.7941],["Pottery Estate","2790",-33.4877,150.1575],["Potts Hill","2143",-33.89,151.03],["Potts Point","2011",-33.868,151.2241],["Prairiewood","2176",-33.861,150.9048],["Prestons","2170",-33.9422,150.8674],["Pretty Beach","2257",-33.528,151.347],["Primbee","2502",-34.5008,150.8817],["Prospect","2148",-33.7981,150.9177],["Punchbowl","2196",-33.9325,151.0495],["Putney","2112",-33.827,151.106],["Putty","2330",-32.9667,150.6667],["Pymble","2073",-33.7457,151.1432],["Pyrmont","2009",-33.8688,151.1942],["Quakers Hill","2763",-33.7242,150.889],["Queens Park","2022",-33.901,151.248],["Queenscliff","2096",-33.7825,151.2847],["Quialigo","2580",-34.9411,149.7617],["Raby","2566",-34.0209,150.8173],["Ramsgate","2217",-33.9819,151.1401],["Ramsgate Beach","2217",-33.982,151.148],["Randwick","2031",-33.9132,151.242],["Randwick Dc","2031",-33.9132,151.242],["Ravensworth","2330",-32.4304,151.0542],["Razorback","2571",-34.1463,150.6633],["Redbournberry","2330",-32.5587,151.1898],["Redfern","2016",-33.8922,151.2059],["Reedy Creek","2330",-32.4952,151.3259],["Regents Park","2143",-33.8857,151.0283],["Regents Park Dc","2143",-33.8857,151.028],["Regentville","2745",-33.7712,150.6604],["Reidtown","2519",-34.3889,150.8939],["Revesby","2212",-33.9452,151.018],["Revesby Heights","2212",-33.9681,151.0177],["Revesby North","2212",-33.9452,151.018],["Rhodes","2138",-33.8282,151.0857],["Richards","2765",-33.6886,150.7817],["Richlands","2580",-34.3722,149.81],["Richmond","2753",-33.6,150.75],["Richmond Lowlands","2753",-33.5824,150.7505],["Riverstone","2765",-33.6819,150.8594],["Riverview","2066",-33.8247,151.1622],["Riverwood","2210",-33.9509,151.0524],["Rixs Creek","2330",-32.5354,151.1435],["Rockdale","2216",-33.9529,151.1376],["Rockdale Dc","2216",-33.9529,151.138],["Rodd Point","2046",-33.8661,151.1437],["Rookwood","2141",-33.8728,151.0556],["Rooty Hill","2766",-33.7715,150.8438],["Ropes Crossing","2760",-33.733,150.791],["Rose Bay","2029",-33.8754,151.2656],["Rose Bay North","2030",-33.8643,151.2784],["Rose Valley","2534",-34.7166,150.8086],["Rosebery","2018",-33.9222,151.2017],["Rosehill","2142",-33.824,151.0212],["Roselands","2196",-33.9369,151.0745],["Rosemeadow","2560",-34.107,150.793],["Roseville","2069",-33.7842,151.1894],["Roseville Chase","2069",-33.7756,151.2],["Roslyn","2580",-34.4954,149.6211],["Rossmore","2557",-33.9224,150.7696],["Roughit","2330",-32.5765,151.251],["Round Corner","2158",-33.6918,151.0198],["Rouse Hill","2155",-33.6816,150.9155],["Royal North Shore Hospital","2065",-33.8216,151.1915],["Rozelle","2039",-33.8662,151.1738],["Run-O-Waters","2580",-34.7553,149.6737],["Ruse","2560",-34.071,150.8423],["Rushcutters Bay","2011",-33.8743,151.2285],["Russell Lea","2046",-33.8595,151.1424],["Russell Vale","2517",-34.358,150.901],["Rydal","2790",-33.484,150.0316],["Rydalmere","2116",-33.8124,151.0384],["Ryde","2112",-33.8157,151.103],["Sackville","2756",-33.4876,150.8697],["Sackville North","2756",-33.4817,150.8847],["Sadleir","2168",-33.9164,150.8915],["San Remo","2262",-33.2154,151.5224],["Sandringham","2219",-33.9986,151.1396],["Sandy Point","2172",-33.976,150.9926],["Sans Souci","2219",-33.989,151.1393],["Saratoga","2251",-33.475,151.348],["Scarborough","2515",-34.2706,150.9603],["Scheyville","2756",-33.6112,150.8829],["Schofields","2762",-33.7044,150.8668],["Scotland Island","2105",-33.6396,151.2904],["Scotts Flat","2330",-32.5972,151.251],["Seaforth","2092",-33.7927,151.2423],["Sedgefield","2330",-32.5425,151.2394],["Sefton","2162",-33.8884,151.0071],["Seven Hills","2147",-33.7779,150.9319],["Seven Hills West","2147",-33.7662,150.9217],["Shalvey","2770",-33.7271,150.8057],["Shane Park","2747",-33.7745,150.737],["Shanes Park","2747",-33.7112,150.7722],["Sheedys Gully","2790",-33.4963,150.1517],["Shell Cove","2529",-34.59,150.8617],["Shellharbour","2529",-34.5972,150.8551],["Shellharbour City Centre","2529",-34.5633,150.8383],["Shellharbour Square","2529",-34.5644,150.839],["Shelly Beach","2261",-33.37,151.4859],["Shipley","2785",-33.6587,150.267],["Shooters Hill","2787",-33.9363,149.8447],["Silverdale","2752",-33.9057,150.6145],["Silverwater","2128",-33.8344,151.0442],["Singleton","2330",-32.5695,151.1788],["Singleton Dc","2330",-32.5645,151.168],["Singleton Heights","2330",-32.541,151.1607],["Singletons Mill","2775",-33.473,151.0733],["Six Mile Flat","2580",-34.7206,149.749],["Smeaton Grange","2567",-34.035,150.757],["Smithfield","2164",-33.8536,150.9407],["Smithfield West","2164",-33.8576,150.9178],["Sodwalls","2790",-33.5481,149.9746],["Somersby","2250",-33.3569,151.2904],["South Bowenfels","2790",-33.5179,150.1127],["South Coogee","2034",-33.933,151.259],["South Granville","2142",-33.8577,151.0108],["South Hurstville","2221",-33.98,151.1035],["South Littleton","2790",-33.5006,150.1366],["South Maroota","2756",-33.5241,150.9485],["South Penrith","2750",-33.7715,150.7011],["South Turramurra","2074",-33.7546,151.113],["South Wentworthville","2145",-33.8178,150.9693],["South Windsor","2756",-33.6253,150.8044],["Spencer","2775",-33.457,151.143],["Spit Junction","2088",-33.8245,151.241],["Spring Farm","2570",-34.072,150.718],["Spring Hill","2500",-34.4514,150.8697],["Spring Valley","2580",-34.9452,149.53],["Springfield","2250",-33.424,151.368],["Springvale","2790",-33.4087,150.1243],["Springwood","2777",-33.7,150.55],["St Albans","2775",-33.2915,150.971],["St Andrews","2566",-34.0198,150.833],["St Clair","2330",-32.3641,151.2439],["St Clair","2759",-33.7987,150.7824],["St Helens Park","2560",-34.1105,150.8079],["St Huberts Island","2257",-33.499,151.351],["St Ives","2075",-33.7214,151.1684],["St Ives Chase","2075",-33.711,151.1595],["St Johns Park","2176",-33.8847,150.907],["St Leonards","2065",-33.8227,151.1942],["St Marys","2760",-33.77,150.7735],["St Marys East","2760",-33.77,150.7735],["St Marys South","2760",-33.77,150.7735],["St Pauls","2031",-33.9204,151.2439],["St Peters","2044",-33.9155,151.1746],["St Peters Dc","2044",-33.9195,151.177],["Stanhope Gardens","2768",-33.723,150.926],["Stanmore","2048",-33.8921,151.1651],["Stanwell Park","2508",-34.2286,150.9815],["Stanwell Tops","2508",-34.2199,150.9918],["State Mine Gully","2790",-33.4605,150.168],["Stonequarry","2580",-34.3816,149.77],["Strathfield","2135",-33.8809,151.0762],["Strathfield South","2136",-33.8943,151.083],["Stream Hill","2526",-34.473,150.7851],["Summer Hill","2130",-33.8923,151.136],["Sun Valley","2777",-33.7071,150.5908],["Surry Hills","2010",-33.8861,151.2111],["Sutherland","2232",-34.0297,151.0593],["Sydenham","2044",-33.9158,151.168],["Sydney","2000",-33.8708,151.2073],["Sydney Domestic Airport","2020",-33.9329,151.1799],["Sydney International Airport","2020",-33.9399,151.1753],["Sydney Olympic Park","2127",-33.8465,151.072],["Sydney South","2000",-33.8708,151.2073],["Sylvania","2224",-34.008,151.1057],["Sylvania Southgate","2224",-34.0103,151.1042],["Sylvania Waters","2224",-34.0232,151.1116],["Tahmoor","2573",-34.2332,150.5879],["Tallawong","2762",-33.7044,150.8668],["Tamarama","2026",-33.898,151.268],["Tarago","2580",-35.0877,149.6665],["Taralga","2580",-34.3961,149.8192],["Tarana","2787",-33.5246,149.9082],["Taren Point","2229",-34.0191,151.1203],["Tarlo","2580",-34.6185,149.7934],["Tarrawanna","2518",-34.3783,150.8883],["Tascott","2250",-33.454,151.314],["Taylor Square","2010",-33.881,151.217],["Taylors Point","2107",-33.636,151.306],["Telopea","2117",-33.7942,151.038],["Tempe","2044",-33.925,151.1604],["Ten Mile Hollow","2250",-33.324,151.0859],["Tennyson","2754",-33.5369,150.7375],["Tennyson Point","2111",-33.8324,151.1169],["Terrey Hills","2084",-33.683,151.223],["Terrigal","2260",-33.448,151.4445],["The Basin","2108",-33.605,151.2867],["The Devils Wilderness","2758",-33.5451,150.5472],["The Entrance","2261",-33.3472,151.4961],["The Entrance North","2261",-33.3313,151.5063],["The Meadows","2787",-33.6433,149.9223],["The Oaks","2570",-34.0768,150.571],["The Ponds","2769",-33.7032,150.9016],["The Rocks","2000",-33.8599,151.209],["The Slopes","2754",-33.5328,150.7069],["The University Of Sydney","2006",-33.8886,151.1873],["Theresa Park","2570",-33.9912,150.6343],["Thirlmere","2572",-34.2052,150.5535],["Thirroul","2515",-34.3147,150.9104],["Thornleigh","2120",-33.7262,151.0841],["Tirrannaville","2580",-34.826,149.6983],["Toolijooa","2534",-34.7653,150.7847],["Toongabbie","2146",-33.7841,150.9543],["Toongabbie East","2146",-33.7841,150.9543],["Toowoon Bay","2261",-33.3626,151.4975],["Toukley","2263",-33.2625,151.5457],["Towradgi","2518",-34.3833,150.9],["Towrang","2580",-34.6873,149.8594],["Tregear","2770",-33.75,150.7944],["Tumbi Umbi","2261",-33.365,151.443],["Turramurra","2074",-33.7335,151.128],["Turrella","2205",-33.933,151.1408],["Uloola","2232",-34.0731,151.0568],["Ultimo","2007",-33.8823,151.1971],["Umina Beach","2257",-33.5287,151.3075],["Unanderra","2526",-34.4536,150.8447],["Unanderra Dc","2526",-34.4536,150.845],["Undercliffe","2206",-33.9237,151.141],["Upper Colo","2756",-33.4167,150.7333],["Upper Macdonald","2775",-33.258,150.942],["Upper Mangrove","2250",-33.311,151.1289],["Vale Of Clwydd","2790",-33.4869,150.1836],["Valley Heights","2777",-33.7,150.5833],["Varroville","2566",-34.0076,150.8151],["Vaucluse","2030",-33.8558,151.2712],["Villawood","2163",-33.8815,150.9821],["Vineyard","2765",-33.6502,150.856],["Voyager Point","2172",-33.959,150.979],["Wagstaffe","2257",-33.524,151.343],["Wahroonga","2076",-33.7186,151.1104],["Waitara","2077",-33.7083,151.1068],["Wakeley","2176",-33.8762,150.9123],["Wallacia","2745",-33.865,150.64],["Wamberal","2260",-33.418,151.443],["Wareemba","2046",-33.8575,151.1323],["Warilla","2528",-34.5528,150.8617],["Warkworth","2330",-32.5762,151.0388],["Warragamba","2752",-33.8917,150.6033],["Warrawee","2074",-33.7289,151.1218],["Warrawong","2502",-34.4844,150.8875],["Warriewood","2102",-33.6881,151.2948],["Warriewood Dc","2102",-33.694,151.301],["Warriewood Shopping Square","2102",-33.6957,151.296],["Warrimoo","2774",-33.7167,150.6],["Warringah Mall","2100",-33.7672,151.2654],["Warumbul","2229",-34.046,151.1228],["Warumbul","2232",-34.0731,151.0568],["Warwick Farm","2170",-33.9113,150.9382],["Waterfall","2233",-34.1424,150.9918],["Waterloo","2017",-33.9003,151.2062],["Waterloo Dc","2017",-33.9003,151.206],["Watsons Bay","2030",-33.8398,151.2817],["Wattle Grove","2173",-33.9492,150.9424],["Wattle Ponds","2330",-32.5205,151.1928],["Waverley","2024",-33.8997,151.2554],["Waverton","2060",-33.8402,151.1954],["Wayo","2580",-34.6156,149.6219],["Webbs Creek","2775",-33.35,150.9333],["Wedderburn","2560",-34.1261,150.8179],["Wendoree Park","2250",-33.4541,151.1607],["Wentworth Falls","2782",-33.7206,150.3791],["Wentworth Point","2127",-33.828,151.077],["Wentworth Port","2177",-33.828,151.077],["Wentworthville","2145",-33.8059,150.9702],["Werombi","2570",-33.9818,150.5846],["Werri Beach","2534",-34.7328,150.834],["Werrington","2747",-33.7594,150.7471],["Werrington County","2747",-33.7478,150.7476],["Werrington Downs","2747",-33.7391,150.7273],["West Gosford","2250",-33.415,151.318],["West Hoxton","2171",-33.9357,150.8308],["West Pennant Hills","2125",-33.7462,151.0297],["West Pymble","2073",-33.762,151.1281],["West Ryde","2114",-33.8068,151.0825],["West Wollongong","2500",-34.4244,150.8682],["Westbrook","2330",-32.497,151.2876],["Westgate","2048",-33.8812,151.171],["Westleigh","2120",-33.723,151.0706],["Westmead","2145",-33.8086,150.987],["Wetherill Park","2164",-33.8498,150.911],["Wetherill Park Bc","2164",-33.847,150.903],["Whalan","2770",-33.7583,150.8083],["Whale Beach","2107",-33.6131,151.3305],["Wheeler Heights","2097",-33.7315,151.2802],["Wheeny Creek","2758",-33.4454,150.7979],["Whittingham","2330",-32.5997,151.1986],["Wiaborough","2580",-34.2395,149.884],["Wiarborough","2580",-34.2395,149.8844],["Wilberforce","2756",-33.5594,150.8406],["Wiley Park","2195",-33.9229,151.0684],["Willmot","2770",-33.7254,150.7924],["Willoughby","2068",-33.8071,151.1994],["Willoughby East","2068",-33.799,151.206],["Willoughby North","2068",-33.795,151.204],["Willow Vale","2534",-34.7333,150.8],["Wilton","2571",-34.2333,150.7],["Windang","2528",-34.5274,150.874],["Windellama","2580",-35.0256,149.9104],["Windsor","2756",-33.615,150.8172],["Windsor Downs","2756",-33.657,150.81],["Wingala","2099",-33.7586,151.29],["Winmalee","2777",-33.6725,150.6189],["Winston Hills","2153",-33.7773,150.9745],["Wisemans Ferry","2775",-33.3819,150.985],["Wolgan Valley","2790",-33.2273,150.1883],["Wollangambe","2790",-33.3428,150.4414],["Wollemi","2330",-33.0174,150.3765],["Wolli Creek","2205",-33.93,151.1534],["Wollongong","2500",-34.4278,150.8931],["Wollongong Dc","2500",-34.4355,150.887],["Wollongong North","2500",-34.4082,150.899],["Wollongong West","2500",-34.4244,150.8682],["Wollstonecraft","2065",-33.8336,151.1913],["Wombarra","2515",-34.275,150.9533],["Wombeyan Caves","2580",-34.2892,149.9761],["Womerah","2756",-33.2688,150.7672],["Wondabyne","2256",-33.5016,151.2389],["Wongawilli","2530",-34.475,150.7583],["Woodbine","2560",-34.0494,150.8197],["Woodcroft","2767",-33.759,150.878],["Woodford","2778",-33.7356,150.4783],["Woodhouselee","2580",-34.5942,149.6598],["Woodpark","2164",-33.8418,150.9626],["Woollahra","2025",-33.8865,151.2438],["Woolloomooloo","2011",-33.8704,151.2223],["Woolooware","2230",-34.0479,151.1411],["Woolwich","2110",-33.8417,151.1697],["Woonona","2517",-34.3417,150.9061],["Woonona East","2517",-34.3417,150.9061],["Woronora","2232",-34.0277,151.0415],["Woronora Dam","2508",-34.1455,150.9849],["Woronora Heights","2233",-34.0304,151.0306],["Wowagin","2580",-34.41,149.71],["Woy Woy","2256",-33.49,151.32],["Woy Woy Bay","2256",-33.484,151.314],["Wrights Creek","2775",-33.3028,151.0058],["Wylies Flat","2330",-32.586,151.1228],["Wyoming","2250",-33.407,151.36],["Yagoona","2199",-33.905,151.0209],["Yagoona West","2199",-33.9097,151.0101],["Yalbraith","2580",-34.2697,149.7462],["Yallah","2530",-34.5333,150.8],["Yanderra","2574",-34.3167,150.5667],["Yarra","2580",-34.7972,149.6015],["Yarramundi","2753",-33.6222,150.6709],["Yarrawarrah","2233",-34.0552,151.0321],["Yattalunga","2251",-33.4687,151.3662],["Yellow Rock","2777",-33.695,150.6242],["Yenabilli","2232",-34.0731,151.0568],["Yennora","2161",-33.8627,150.966],["Yerranderie","2787",-34.119,150.219],["Yosemite","2780",-33.7005,150.3136],["Yowie Bay","2228",-34.0498,151.1033],["Zetland","2017",-33.908,151.2105]];
+
+  var store = {
+    get:function(k){try{return JSON.parse(localStorage.getItem("pestable.priceCheck."+k));}catch(e){return null;}},
+    set:function(k,v){try{localStorage.setItem("pestable.priceCheck."+k,JSON.stringify(v));}catch(e){}}
+  };
+  var vehicle = Object.assign({}, VEHICLE_DEFAULTS, store.get("vehicle3") || {});
+  var recent = store.get("recent") || [];
+  var origin = {mode:"base", here:null};
+  function fresh(){ return {postcode:"", suburb:"", picked:null, services:[], property:null, price:{}, addon:"none", gcSeparate:false}; }
+  var st = fresh();
+
+  var $ = function(id){return document.getElementById(id);};
+  var each = function(sel,fn){Array.prototype.forEach.call(document.querySelectorAll(sel),fn);};
+  var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});};
+  function money(n,cents){ var r=Math.round(n*100)/100, whole=Math.abs(r-Math.round(r))<0.005;
+    return (r<0?"-":"")+"$"+Math.abs(r).toLocaleString("en-AU",{minimumFractionDigits:(cents||!whole)?2:0,maximumFractionDigits:2}); }
+  function mins(m){ m=Math.max(5,Math.round(m/5)*5); return m<60 ? m+" min" : Math.floor(m/60)+"h "+(m%60?m%60+"m":""); }
+  function svc(id){ for(var i=0;i<SERVICES.length;i++) if(SERVICES[i].id===id) return SERVICES[i]; }
+  function prop(){ for(var i=0;i<PROPERTY.length;i++) if(PROPERTY[i].id===st.property) return PROPERTY[i]; return null; }
+  function rangeOf(id){
+    var p=prop();
+    if(id==="general" && p) return {lo:p.lo, typ:Math.round((p.lo+p.hi)/2), hi:p.hi, src:p.name};
+    var s=svc(id); return s.lo==null ? null : {lo:s.lo, typ:s.typ, hi:s.hi, src:s.note};
+  }
+  // German cockroach rides along with general pest unless the tech chooses to charge it separately.
+  function included(id){ return id==="german_cockroach" && !st.gcSeparate && st.services.indexOf("general")>=0; }
+  function needsFollowUp(){ return st.services.indexOf("german_cockroach")>=0; }
+  function priceOf(id){ if(included(id)) return 0; if(st.price[id]!==undefined && st.price[id]!=="") return Number(st.price[id])||0; if(st.price[id]==="") return 0; var r=rangeOf(id); return r?r.typ:0; }
+  // Which band a price sits in: the range split in thirds.
+  function zoneOf(id,v){
+    var r=rangeOf(id); if(!r) return {k:"none",name:""};
+    if(v<r.lo) return {k:"out",name:"Below low"};
+    if(v>r.hi) return {k:"out",name:"Above high"};
+    var span=r.hi-r.lo; if(span<=0) return {k:"mid",name:"Medium"};
+    var f=(v-r.lo)/span;
+    return f<1/3 ? {k:"low",name:"Low"} : f<=2/3 ? {k:"mid",name:"Medium"} : {k:"high",name:"High"};
+  }
+
+  /* ---------- travel ---------- */
+  function straightKm(a,b){ var rad=function(d){return d*Math.PI/180;}, dLat=rad(b.lat-a.lat), dLng=rad(b.lng-a.lng);
+    var h=Math.pow(Math.sin(dLat/2),2)+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.pow(Math.sin(dLng/2),2); return 2*6371*Math.asin(Math.sqrt(h)); }
+  function num(v,f){ var n=Number(v); return v!=="" && v!=null && isFinite(n) && n>0 ? n : f; }
+  function from(){ return origin.mode==="here" && origin.here ? origin.here : BASE; }
+  function travel(){
+    if(!st.picked) return null;
+    var dp=num(vehicle.dieselPerLitre,VEHICLE_DEFAULTS.dieselPerLitre), lp=num(vehicle.litresPer100,VEHICLE_DEFAULTS.litresPer100);
+    var oneWay=straightKm(from(),{lat:st.picked[2],lng:st.picked[3]})*VEHICLE_DEFAULTS.roadFactor;
+    var km=oneWay*(vehicle.returnTrip!==false?2:1);
+    var drive=Math.min(oneWay,CITY_KM)/CITY_KMH*60+Math.max(0,oneWay-CITY_KM)/OPEN_KMH*60;
+    var cost=function(l){return km*l/100*dp;};
+    return {oneWayKm:oneWay, km:km, fuel:cost(lp), fuelLo:cost(LP_RANGE[0]), fuelHi:cost(LP_RANGE[1]), drive:drive, peak:drive*PEAK, lp:lp, dp:dp};
+  }
+  function byPostcode(d){ return d ? PLACES.filter(function(p){return p[1].indexOf(d)===0;}) : []; }
+  function bySuburb(t,limit){ t=String(t||"").trim().toLowerCase(); if(t.length<2) return [];
+    var a=[],b=[]; PLACES.forEach(function(p){var n=p[0].toLowerCase(); if(n.indexOf(t)===0) a.push(p); else if(n.indexOf(t)>0) b.push(p);});
+    return a.concat(b).slice(0,limit||8); }
+  function nearest(lat,lng){ var best=null,bd=1e9; PLACES.forEach(function(p){var d=straightKm({lat:lat,lng:lng},{lat:p[2],lng:p[3]}); if(d<bd){bd=d;best=p;}}); return bd<25?best:null; }
+  function locate(ok){
+    if(!navigator.geolocation){ toast("Location isn't available here"); return; }
+    toast("Finding you…");
+    navigator.geolocation.getCurrentPosition(function(pos){ok(pos.coords.latitude,pos.coords.longitude);},
+      function(err){ toast(err.code===1?"Location is off: allow it for Safari":"No GPS fix. Type the postcode."); },
+      {enableHighAccuracy:false,timeout:10000,maximumAge:120000});
+  }
+
+  /* ---------- static bits ---------- */
+  $("svcChips").innerHTML = SERVICES.map(function(s){return '<button type="button" class="tile" data-svc="'+s.id+'"><span class="ic">'+s.ic+'</span><span>'+esc(s.name)+'<small>'+(s.lo==null?'Type price':'$'+s.lo+'–'+s.hi)+'</small></span></button>';}).join("");
+  $("propChips").innerHTML = PROPERTY.map(function(p){return '<button type="button" class="tile" data-prop="'+p.id+'"><span class="ic">'+p.ic+'</span><span>'+esc(p.name)+'<small>$'+p.lo+'–'+p.hi+'</small></span></button>';}).join("");
+  function mid(a,b){return Math.round((a+b)/2);}
+  $("priceTable").innerHTML = '<tr><th>Service</th><th class="n">Low</th><th class="n">Medium</th><th class="n">High</th></tr>' +
+    PROPERTY.map(function(p){return '<tr><td>General, '+esc(p.name)+'</td><td class="n l">'+money(p.lo)+'</td><td class="n m">'+money(mid(p.lo,p.hi))+'</td><td class="n h">'+money(p.hi)+'</td></tr>';}).join("") +
+    SERVICES.map(function(s){return '<tr><td>'+esc(s.name)+(s.id==="general"?' (no property)':'')+'</td>'+(s.lo==null?'<td class="n" colspan="3">Type the price</td>':'<td class="n l">'+money(s.lo)+'</td><td class="n m">'+money(s.typ)+'</td><td class="n h">'+money(s.hi)+'</td>')+'</tr>';}).join("");
+  function renderCar(){
+    $("originChips").innerHTML = '<button type="button" class="tile center '+(origin.mode==="base"?"on":"")+'" data-origin="base">🏁 '+BASE.name+'<small>the base</small></button>'+
+      '<button type="button" class="tile center '+(origin.mode==="here"?"on":"")+'" data-origin="here">📍 Where I am<small>'+(origin.here?esc(origin.here.name):'uses GPS')+'</small></button>';
+    $("lpChips").innerHTML = [10,11,12].map(function(l){return '<button type="button" class="tile center '+(Number(vehicle.litresPer100)===l?"on":"")+'" data-lp="'+l+'">'+l+' L<small>'+(l===10?'motorway':l===11?'mixed':'traffic')+'</small></button>';}).join("");
+    if(document.activeElement!==$("diesel")) $("diesel").value=vehicle.dieselPerLitre;
+    $("returnTrip").checked = vehicle.returnTrip!==false;
+  }
+
+  /* ---------- render ---------- */
+  function renderPlace(){
+    var box=$("placeBox"), h="";
+    $("stepWhere").classList.toggle("done",!!st.picked);
+    if(st.picked){
+      var t=travel();
+      h='<div class="place"><span class="pin">📍</span><span><b>'+esc(st.picked[0])+' '+st.picked[1]+'</b>'+(t?'<small>'+Math.round(t.oneWayKm)+' km · about '+mins(t.drive)+' from '+esc(from().name)+'</small>':'')+'</span><button type="button" data-act="clearPlace">Change</button></div>';
+    } else {
+      h='<div class="loc"><input type="text" id="post" class="post" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="2000" aria-label="Postcode" value="'+esc(st.postcode)+'">'+
+        '<button type="button" class="gps" data-act="jobHere">📍 I\'m at the job</button></div>'+
+        '<input type="text" id="sub" autocomplete="off" autocapitalize="words" placeholder="…or type the suburb" value="'+esc(st.suburb)+'" style="margin-top:8px" aria-label="Suburb">';
+      var m = st.postcode.length>=3 ? byPostcode(st.postcode).slice(0,12) : bySuburb(st.suburb);
+      if(m.length) h+='<div class="chips" style="margin-top:10px">'+m.map(function(p){return '<button type="button" class="chip" data-place="'+PLACES.indexOf(p)+'">'+esc(p[0])+' <small>'+p[1]+'</small></button>';}).join("")+'</div>';
+      else if(st.postcode.length===4) h+='<p class="note">No suburb with '+esc(st.postcode)+' in Sydney, the Central Coast or the Illawarra.</p>';
+      else if(st.suburb.trim().length>=2) h+='<p class="note">No match. Try fewer letters.</p>';
+      else if(recent.length) h+='<span class="lbl">Recent</span><div class="chips">'+recent.map(function(r){var i=findIdx(r);return i<0?'':'<button type="button" class="chip" data-place="'+i+'">'+esc(r[0])+' <small>'+r[1]+'</small></button>';}).join("")+'</div>';
+    }
+    var f=document.activeElement && document.activeElement.id, pos=f && document.activeElement.selectionStart;
+    box.innerHTML=h;
+    if((f==="post"||f==="sub") && $(f)){ var el=$(f); el.focus(); try{el.setSelectionRange(pos,pos);}catch(x){} }
+  }
+  function findIdx(r){ for(var i=0;i<PLACES.length;i++) if(PLACES[i][0]===r[0]&&PLACES[i][1]===r[1]) return i; return -1; }
+
+  function sliderHTML(id){
+    if(included(id)) return '<div class="svc" id="s_'+id+'"><div class="svc-top"><div class="nm">'+svc(id).ic+' '+esc(svc(id).name)+'<small>Gel bait + follow-up</small></div>'+
+      '<div class="pill z-mid"><span class="zone">Included</span><span class="val">$0</span></div></div>'+
+      '<div class="info"><b>Included in the general pest price</b>Quote the general pest price only. '+FOLLOWUP_TEXT.toLowerCase().replace(/^follow/,"A follow")+' is needed.'+
+      '<br><button type="button" class="chip" data-act="gcSeparate">Charge it separately instead</button></div></div>';
+    var s=svc(id), r=rangeOf(id), v=priceOf(id), z=zoneOf(id,v);
+    var h='<div class="svc" id="s_'+id+'"><div class="svc-top"><div class="nm">'+s.ic+' '+esc(s.name)+'<small>'+esc(r?r.src:s.note)+'</small></div>'+
+          '<div class="pill z-'+z.k+'" id="pill_'+id+'"><span class="zone">'+z.name+'</span><span class="val">'+(v?money(v):'$—')+'</span></div></div>';
+    if(r && r.hi>r.lo){
+      var pct=Math.max(0,Math.min(100,(v-r.lo)/(r.hi-r.lo)*100));
+      h+='<div class="slider"><div class="track"><i></i><i></i><i></i></div><div class="fill" id="fill_'+id+'" style="width:'+pct+'%;--w:'+(pct?10000/pct:100)+'%"></div>'+
+         '<input type="range" min="'+r.lo+'" max="'+r.hi+'" step="1" value="'+Math.max(r.lo,Math.min(r.hi,v))+'" data-slide="'+id+'" aria-label="'+esc(s.name)+' price" style="--zc:var(--'+(z.k==="out"?"low":z.k)+')"></div>';
+    }
+    if(r){
+      h+='<div class="marks">'+[["lo","low","Low"],["typ","mid","Medium"],["hi","high","High"]].map(function(o){
+        return '<button type="button" class="m-'+o[1]+(v===r[o[0]]?' on':'')+'" data-lv="'+o[0]+'" data-for="'+id+'"><span>'+o[2]+'</span><b>'+money(r[o[0]])+'</b></button>';}).join("")+'</div>';
+    }
+    h+='<div class="fine"><button type="button" data-step="-'+STEP+'" data-for="'+id+'" aria-label="Down $'+STEP+'">−'+STEP+'</button>'+
+       '<input type="text" inputmode="numeric" pattern="[0-9]*" id="p_'+id+'" data-price="'+id+'" value="'+(st.price[id]!==undefined?esc(st.price[id]):(r?r.typ:""))+'" placeholder="Type $" aria-label="'+esc(s.name)+' price">'+
+       '<button type="button" data-step="'+STEP+'" data-for="'+id+'" aria-label="Up $'+STEP+'">+'+STEP+'</button></div>';
+    h+='<div id="w_'+id+'">'+warnFor(id)+'</div>';
+    if(id==="general" && !st.property) h+='<p class="note">Pick the property above for the right range.</p>';
+    return h+'</div>';
+  }
+  // Update one service's price display without rebuilding it (keeps the slider drag smooth).
+  function updateSvc(id, fromSlider){
+    var r=rangeOf(id), v=priceOf(id), z=zoneOf(id,v), pill=$("pill_"+id); if(!pill) return;
+    pill.className="pill z-"+z.k; pill.innerHTML='<span class="zone">'+z.name+'</span><span class="val">'+(v?money(v):'$—')+'</span>';
+    var sl=document.querySelector('[data-slide="'+id+'"]');
+    if(sl && r){ if(!fromSlider) sl.value=Math.max(r.lo,Math.min(r.hi,v)); sl.style.setProperty("--zc","var(--"+(z.k==="out"?"low":z.k)+")");
+      var pct=Math.max(0,Math.min(100,(v-r.lo)/(r.hi-r.lo)*100)), f=$("fill_"+id); f.style.width=pct+"%"; f.style.setProperty("--w",(pct?10000/pct:100)+"%"); }
+    each('[data-lv][data-for="'+id+'"]',function(b){ b.classList.toggle("on", r && v===r[b.dataset.lv]); });
+    var inp=$("p_"+id); if(inp && document.activeElement!==inp) inp.value = v||"";
+    $("w_"+id).innerHTML=warnFor(id);
+    renderResult();
+  }
+  function renderServices(){
+    each("[data-svc]",function(b){var on=st.services.indexOf(b.dataset.svc)>=0;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+    each("[data-prop]",function(b){var on=st.property===b.dataset.prop;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+    $("stepSvc").classList.toggle("done",st.services.length>0);
+    $("stepProp").classList.toggle("done",!!st.property);
+    $("priceCard").hidden = st.services.length===0;
+    $("svcRows").innerHTML = st.services.map(sliderHTML).join("") +
+      (st.gcSeparate && st.services.indexOf("general")>=0 && needsFollowUp() ? '<p class="note"><button type="button" class="chip" data-act="gcInclude">Include German cockroach in general pest</button></p>' : '');
+  }
+  function warnFor(id){
+    var r=rangeOf(id), v=priceOf(id), s=svc(id);
+    if(r && v && v<r.lo) return '<div class="warn">⚠️ Below the lowest ('+money(r.lo)+'). Only with a good reason.</div>';
+    if(r && v>r.hi) return '<div class="warn">⬆️ Above the usual top ('+money(r.hi)+'). Fine for a heavy job; tell the customer why.</div>';
+    return s.thin ? '<p class="note">Thin history: check the job before quoting.</p>' : "";
+  }
+
+  function totals(){
+    var lo=0,hi=0,job=0,missing=[],ranged=0;
+    st.services.forEach(function(id){ if(included(id)) return; var r=rangeOf(id), p=priceOf(id); job+=p; if(!p) missing.push(svc(id).name); if(r){lo+=r.lo;hi+=r.hi;ranged++;} else {lo+=p;hi+=p;} });
+    var fu = needsFollowUp() ? FOLLOWUP_FEE : 0; job+=fu; lo+=fu; hi+=fu;
+    var t=travel(), add=0, fuelAdd=0;
+    if(t){ fuelAdd=Math.max(5,Math.ceil(t.fuel/5)*5); add=st.addon==="fuel"?fuelAdd:(FLAT_ADDONS.indexOf(+st.addon)>=0?+st.addon:0); }
+    return {lo:lo,hi:hi,job:job,missing:missing,ranged:ranged,t:t,add:add,fuelAdd:fuelAdd,total:job+add};
+  }
+  function quoteText(T){
+    var L=[BUSINESS+" quote"]; if(st.picked) L.push(st.picked[0]+" "+st.picked[1]);
+    st.services.forEach(function(id){ L.push("- "+svc(id).name+(id==="general"&&prop()?" ("+prop().name+")":"")+": "+(included(id)?"included":money(priceOf(id)))); });
+    if(needsFollowUp()) L.push("- "+FOLLOWUP_TEXT+": "+(FOLLOWUP_FEE?money(FOLLOWUP_FEE):"included"));
+    if(T.add>0) L.push("- Travel: "+money(T.add));
+    L.push("Total: "+money(T.total)); return L.join("\n");
+  }
+
+  function renderResult(){
+    var T=totals(), t=T.t, h="";
+    if(T.job>0){
+      h+='<div class="hero"><div class="t">Quote the customer</div><div class="v">'+money(T.total)+'</div>'+
+         '<div class="s">'+(T.add?money(T.job)+' job + '+money(T.add)+' travel':'Job price')+(t?' · '+money(T.total-t.fuel,true)+' left after diesel':'')+'</div></div>';
+    } else {
+      h+='<div class="hero empty"><div class="v">'+(st.services.length?'Set a price for each service':'Pick the suburb and the pest')+'</div></div>';
+    }
+    if(needsFollowUp()) h+='<div class="fu"><span class="ic">🔁</span><span><b>German cockroach: follow-up needed</b>'+FOLLOWUP_TEXT+(st.services.indexOf("general")>=0&&!st.gcSeparate?'. Priced as general pest only.':'.')+'</span></div>';
+    if(st.services.length && T.ranged && T.hi>T.lo){
+      var pct=Math.max(0,Math.min(100,(T.job-T.lo)/(T.hi-T.lo)*100));
+      h+='<div class="rangebar"><div class="rb"><span class="dot" style="left:'+pct+'%"></span></div>'+
+         '<div class="ends"><span>Don\'t go below<br><b>'+money(T.lo)+'</b></span><span style="text-align:right">Top of range<br><b>'+money(T.hi)+'</b></span></div></div>';
+    }
+    if(t){
+      h+='<div class="stats">'+
+        '<div class="stat"><div class="k">Distance</div><div class="v">'+Math.round(t.oneWayKm)+' km</div><div class="s">each way</div></div>'+
+        '<div class="stat"><div class="k">Drive</div><div class="v">'+mins(t.drive)+'</div><div class="s">'+mins(t.peak)+' peak</div></div>'+
+        '<div class="stat"><div class="k">Diesel</div><div class="v">'+money(t.fuel)+'</div><div class="s">'+money(t.fuelLo)+'–'+money(t.fuelHi)+'</div></div></div>';
+    }
+    if(t && T.job>0){
+      var far=t.oneWayKm>SUGGEST_ADDON_KM;
+      var opts=[["none","No add-on"],["fuel","Fuel +"+money(T.fuelAdd)]].concat(FLAT_ADDONS.map(function(a){return [String(a),"+"+money(a)];}));
+      h+='<div class="addon"><span class="lbl" style="margin-top:4px">'+(far?'Far job: add travel?':'Add travel?')+'</span><div class="chips">'+
+        opts.map(function(o){return '<button type="button" class="chip '+(st.addon===o[0]?"on":"")+'" data-addon="'+o[0]+'">'+o[1]+(far&&o[0]==="fuel"?'<span class="tag">TIP</span>':'')+'</button>';}).join("")+'</div></div>';
+    }
+    if(st.services.length){
+      h+='<div class="rows">'+st.services.map(function(id){var v=priceOf(id), z=zoneOf(id,v);
+        if(included(id)) return '<div class="row"><span>'+svc(id).ic+' '+esc(svc(id).name)+'<span class="sub">With general pest</span></span><b>Included</b></div>';
+        return '<div class="row"><span>'+svc(id).ic+' '+esc(svc(id).name)+(z.name?'<span class="sub">'+z.name+'</span>':'')+'</span><b>'+(v?money(v):'—')+'</b></div>';}).join("")+
+        (needsFollowUp()?'<div class="row"><span>🔁 '+FOLLOWUP_TEXT+'<span class="sub">Book it before you leave</span></span><b>'+(FOLLOWUP_FEE?money(FOLLOWUP_FEE):'Included')+'</b></div>':'')+
+        (T.add?'<div class="row"><span>🚐 Travel</span><b>'+money(T.add)+'</b></div>':'')+
+        (t?'<div class="row"><span>⛽ Diesel '+(vehicle.returnTrip!==false?'there and back':'one way')+'<span class="sub">'+Math.round(t.km)+' km at '+t.lp+' L/100 · $'+t.dp.toFixed(2)+'/L</span></span><b>−'+money(t.fuel,true)+'</b></div>':'')+'</div>';
+    }
+    if(T.job>0){
+      var msg=quoteText(T);
+      h+='<div class="share"><button type="button" class="c" data-act="copy">📋 Copy</button><a class="x" href="sms:?&body='+encodeURIComponent(msg)+'">💬 Text</a><a class="w" href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">WhatsApp</a></div>';
+    }
+    if(T.missing.length) h+='<p class="note">Type a price for: '+esc(T.missing.join(", "))+'.</p>';
+    if(t) h+='<p class="note">Distance: straight line to the suburb centre +30% for roads. Drive time is a guide, not a GPS route.</p>';
+    $("out").innerHTML=h;
+
+    $("barL").innerHTML = '<b>'+(st.picked?'📍 '+esc(st.picked[0])+(t?' · '+Math.round(t.oneWayKm)+' km · '+mins(t.drive):''):'No suburb yet')+'</b>'+
+      (T.ranged?'Range '+money(T.lo)+(T.hi!==T.lo?'–'+money(T.hi):''):(st.services.length?'':'Tap the pest'))+(t?' · ⛽ '+money(t.fuel):'');
+    $("barBtn").innerHTML='<small>QUOTE</small>'+(T.total?money(T.total):'$—');
+  }
+
+  function render(){ renderPlace(); renderServices(); renderResult(); renderCar(); }
+  function toast(m){ var el=$("toast"); el.textContent=m; el.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(function(){el.classList.remove("show");},2200); }
+  function pick(p){
+    st.picked=p; st.postcode=p[1]; st.suburb="";
+    recent=[[p[0],p[1]]].concat(recent.filter(function(r){return !(r[0]===p[0]&&r[1]===p[1]);})).slice(0,6); store.set("recent",recent);
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    render();
+  }
+  function saveCar(){ store.set("vehicle3",vehicle); }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", function(e){
+    var b=e.target.closest("button"); if(!b) return; var d=b.dataset;
+    if(d.svc){
+      var i=st.services.indexOf(d.svc);
+      if(i>=0){ st.services.splice(i,1); delete st.price[d.svc]; if(d.svc==="german_cockroach") st.gcSeparate=false; } else st.services.push(d.svc);
+      render();
+    } else if(d.prop){
+      st.property = st.property===d.prop ? null : d.prop;
+      if(st.property && st.services.indexOf("general")<0) st.services.unshift("general");
+      delete st.price.general; render();
+    } else if(d.lv){ st.price[d.for]=String(rangeOf(d.for)[d.lv]); updateSvc(d.for);
+    } else if(d.step){ st.price[d.for]=String(Math.max(0,priceOf(d.for)+Number(d.step))); updateSvc(d.for);
+    } else if(d.act==="gcSeparate"){ st.gcSeparate=true; delete st.price.german_cockroach; render();
+    } else if(d.act==="gcInclude"){ st.gcSeparate=false; render();
+    } else if(d.addon){ st.addon=d.addon; renderResult();
+    } else if(d.place){ pick(PLACES[+d.place]);
+    } else if(d.origin){
+      if(d.origin==="base"){ origin.mode="base"; render(); }
+      else locate(function(lat,lng){ var n=nearest(lat,lng); origin={mode:"here",here:{lat:lat,lng:lng,name:n?n[0]:"your location"}}; toast("Measuring from "+origin.here.name); render(); });
+    } else if(d.lp){ vehicle.litresPer100=Number(d.lp); saveCar(); render();
+    } else if(d.act==="jobHere"){ locate(function(lat,lng){ var n=nearest(lat,lng); if(n){ pick(n); toast("Job set to "+n[0]); } else toast("Outside the suburb list. Type the postcode."); });
+    } else if(d.act==="clearPlace"){ st.picked=null; st.postcode=""; st.suburb=""; render(); $("post").focus();
+    } else if(d.act==="toQuote"){ $("quoteCard").scrollIntoView({behavior:"smooth",block:"start"});
+    } else if(d.act==="copy"){
+      var txt=quoteText(totals());
+      (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){toast("Quote copied");},function(){
+        var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+        try{document.execCommand("copy");toast("Quote copied");}catch(x){toast("Couldn't copy");} ta.remove(); });
+    } else if(b.id==="resetAll"){ st=fresh(); render(); window.scrollTo({top:0,behavior:"smooth"});
+    } else if(b.id==="resetCar"){ vehicle=Object.assign({},VEHICLE_DEFAULTS); origin={mode:"base",here:null}; saveCar(); $("diesel").value=vehicle.dieselPerLitre; render(); }
+  });
+
+  document.addEventListener("input", function(e){
+    var el=e.target, d=el.dataset||{};
+    if(d.slide){
+      var r=rangeOf(d.slide), v=Number(el.value);
+      // snap to $5, but let the ends land exactly on the range ends
+      var snapped = v>=r.hi-2 ? r.hi : v<=r.lo+2 ? r.lo : Math.round(v/STEP)*STEP;
+      st.price[d.slide]=String(snapped); updateSvc(d.slide,true);
+    } else if(el.id==="post"){
+      var dg=el.value.replace(/\D/g,"").slice(0,4); el.value=dg;
+      st.postcode=dg; st.suburb=""; st.picked=null;
+      if(dg.length===4){ var hits=byPostcode(dg); if(hits.length===1){ pick(hits[0]); return; } }
+      renderPlace(); renderResult();
+    } else if(el.id==="sub"){ st.suburb=el.value; st.postcode=""; renderPlace();
+    } else if(d.price){
+      var v2=el.value.replace(/\D/g,""); if(v2!==el.value) el.value=v2;
+      st.price[d.price]=v2; updateSvc(d.price);
+    } else if(el.id==="diesel"){
+      var dv=el.value.replace(/[^0-9.]/g,""); if(dv!==el.value) el.value=dv;
+      vehicle.dieselPerLitre=dv; saveCar(); renderPlace(); renderResult();
+    }
+  });
+  // light buzz on Android when crossing Low/Medium/High (iPhone Safari ignores this)
+  var lastZone={};
+  document.addEventListener("input",function(e){ var d=e.target.dataset; if(d&&d.slide){ var z=zoneOf(d.slide,priceOf(d.slide)).k; if(lastZone[d.slide]&&lastZone[d.slide]!==z&&navigator.vibrate) navigator.vibrate(8); lastZone[d.slide]=z; } });
+  $("returnTrip").addEventListener("change",function(){ vehicle.returnTrip=this.checked; saveCar(); renderResult(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Enter" && e.target.id==="sub"){ var m=bySuburb(st.suburb); if(m.length) pick(m[0]); } });
+
+  render();
+})();
+</script>
+</body>
+</html>
