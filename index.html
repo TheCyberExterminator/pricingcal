@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pestable Price Check</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#14213d">
+<style>
+  :root{
+    --bg:#f3f5f8; --card:#fff; --ink:#14213d; --muted:#5b6475; --line:#dde2ea;
+    --brand:#14213d; --accent:#2e9e4f; --accent-ink:#fff; --soft:#e8f5ec;
+    --warn:#b45309; --warn-bg:#fff7e6; --chip:#f6f7fa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom)}
+  header{background:var(--brand);color:#fff;padding:14px 16px}
+  header h1{margin:0;font-size:20px;letter-spacing:.2px}
+  header p{margin:2px 0 0;font-size:13px;opacity:.8}
+  main{max-width:640px;margin:0 auto;padding:12px 16px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+  .card h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{appearance:none;border:1.5px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:10px 14px;font:inherit;font-size:15px;cursor:pointer;min-height:44px}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+  .chip small{opacity:.75;font-weight:400}
+  .svc{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .svc:first-child{border-top:0;margin-top:0;padding-top:0}
+  .svc-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .svc-head b{font-size:17px}
+  .svc-head span{font-size:13px;color:var(--muted)}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 8px}
+  .seg button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:10px;padding:8px 4px;font:inherit;cursor:pointer;color:var(--ink);min-height:52px}
+  .seg button span{display:block;font-size:12px;color:var(--muted)}
+  .seg button b{font-size:17px}
+  .seg button.on{border-color:var(--accent);background:var(--soft)}
+  .price-in{display:flex;align-items:center;gap:8px}
+  .price-in label{font-size:14px;color:var(--muted)}
+  input[type=text],input[type=number],input[type=search]{font:inherit;font-size:17px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;background:#fff;color:var(--ink)}
+  .price-in input{max-width:130px}
+  .note{font-size:13px;color:var(--muted);margin:6px 0 0}
+  .warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:13px;margin-top:8px}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px}
+  .row b{white-space:nowrap}
+  .row.big{font-size:18px}
+  .row.big b{font-size:24px}
+  .result{background:var(--brand);color:#fff;border:0}
+  .result h2{color:#9fe3b4}
+  .result .row{border-bottom:1px solid rgba(255,255,255,.12)}
+  .result .row:last-child{border-bottom:0}
+  .result .muted{color:rgba(255,255,255,.7);font-size:13px}
+  .result .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff}
+  .result .chip.on{background:var(--accent);border-color:var(--accent)}
+  .quote{background:var(--accent);border-radius:12px;padding:12px 14px;margin-top:12px}
+  .quote .row{border:0;padding:2px 0}
+  .quote b{font-size:30px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid2 label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+  details summary{cursor:pointer;font-weight:600;padding:4px 0}
+  .toggle{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px}
+  .toggle input{width:22px;height:22px}
+  .empty{color:rgba(255,255,255,.75);font-size:15px}
+  button.reset{appearance:none;border:0;background:none;color:var(--muted);text-decoration:underline;font:inherit;font-size:14px;cursor:pointer;padding:8px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  td.n,th.n{text-align:right}
+  footer{text-align:center;font-size:12px;color:var(--muted);padding:10px 16px 30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pestable Price Check</h1>
+  <p>For technicians: what to quote, how low and how high to go.</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. Service (tap one or more)</h2>
+    <div class="chips" id="svcChips"></div>
+  </section>
+
+  <section class="card" id="propCard">
+    <h2>2. Property</h2>
+    <div class="chips" id="propChips"></div>
+    <p class="note">Property sets the General pest range. Other services use CRM history.</p>
+  </section>
+
+  <section class="card" id="priceCard" hidden>
+    <h2>3. Pick the price</h2>
+    <div id="svcRows"></div>
+  </section>
+
+  <section class="card">
+    <h2>4. Where is the job?</h2>
+    <input type="search" id="where" list="suburbs" placeholder="Suburb or postcode, e.g. Penrith or 2750" autocomplete="off">
+    <datalist id="suburbs"></datalist>
+    <p class="note" id="whereNote">Or type the km one way:</p>
+    <div class="price-in"><input type="number" id="kmIn" inputmode="decimal" placeholder="km" min="0"><label for="kmIn">km one way</label></div>
+  </section>
+
+  <section class="card result" id="result">
+    <h2>Quote</h2>
+    <div id="out"><p class="empty">Pick a service to see the price.</p></div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Fuel settings</summary>
+      <div class="grid2" style="margin-top:10px">
+        <div><label for="diesel">Diesel $/L</label><input type="number" id="diesel" step="0.01" inputmode="decimal"></div>
+        <div><label for="lp100">Van L/100 km</label><input type="number" id="lp100" step="0.1" inputmode="decimal"></div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="returnTrip"> Count the trip there and back</label>
+      <p class="note">Distance is measured from Potts Hill: straight line to the suburb, plus 30% for roads. Settings are saved on this phone.</p>
+      <button class="reset" id="resetFuel" type="button">Reset fuel settings</button>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Price list</summary>
+      <table style="margin-top:8px" id="priceTable"></table>
+      <p class="note">General pest by property: from the owner's ranges. Other services: from 173 CRM bookings (jobs at $100 or under left out as deposits or discounts). Bed bugs only has 4 jobs, so treat it as a rough guide.</p>
+    </details>
+  </section>
+
+  <button class="reset" id="resetAll" type="button" style="display:block;margin:0 auto">Clear and start a new quote</button>
+</main>
+<footer>Estimate only. Confirm extras, access issues and heavy infestations on site.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ===== PRICES: edit these to change what techs see =====
+  // low = lowest to go, mid = usual price, high = top of the range
+  var SERVICES = [
+    {id:"general",  name:"General pest",       low:150, mid:200, high:250, note:"Cockroaches, spiders, ants, silverfish", byProperty:true},
+    {id:"german",   name:"German cockroaches", low:120, mid:200, high:250, note:"Gel bait + follow-up"},
+    {id:"rodents",  name:"Rodents",            low:120, mid:150, high:200, note:"Rats and mice"},
+    {id:"eol",      name:"End of lease / fleas", low:120, mid:150, high:200, note:"Flea treatment + certificate"},
+    {id:"bedbugs",  name:"Bed bugs",           low:150, mid:185, high:185, note:"Only 4 jobs in CRM: check on site", thin:true},
+    {id:"commercial", name:"Commercial",       low:null, mid:null, high:null, note:"No history: type the price"},
+    {id:"other",    name:"Other",              low:null, mid:null, high:null, note:"Type the price"}
+  ];
+  // General pest ranges by property
+  var PROPERTIES = [
+    {id:"unit",   name:"Unit",           low:120, high:189},
+    {id:"granny", name:"Granny flat",    low:150, high:200},
+    {id:"single", name:"Single storey",  low:180, high:289},
+    {id:"double", name:"Double storey",  low:250, high:300}
+  ];
+  var ADDONS = [20, 30];          // fixed travel add-ons
+  var FUEL_DEFAULTS = {diesel:2.09, lp100:10, returnTrip:true};
+  var BASE = {name:"Potts Hill", lat:-33.8930, lon:151.0330};
+  var ROAD_FACTOR = 1.3;
+
+  // Suburb, postcode, lat, lon (approximate suburb centres)
+  var SUBURBS = [
+    ["Potts Hill",2143,-33.893,151.033],["Yagoona",2199,-33.905,151.026],["Bankstown",2200,-33.918,151.035],
+    ["Birrong",2143,-33.893,151.022],["Regents Park",2143,-33.883,151.024],["Chester Hill",2162,-33.883,150.998],
+    ["Sefton",2162,-33.887,151.011],["Bass Hill",2197,-33.900,150.994],["Georges Hall",2198,-33.912,150.983],
+    ["Condell Park",2200,-33.924,151.012],["Padstow",2211,-33.952,151.032],["Revesby",2212,-33.950,151.015],
+    ["Panania",2213,-33.954,150.997],["East Hills",2213,-33.962,150.987],["Milperra",2214,-33.938,150.986],
+    ["Punchbowl",2196,-33.928,151.052],["Lakemba",2195,-33.920,151.075],["Belmore",2192,-33.918,151.088],
+    ["Campsie",2194,-33.912,151.104],["Canterbury",2193,-33.912,151.117],["Earlwood",2206,-33.925,151.125],
+    ["Greenacre",2190,-33.902,151.055],["Chullora",2190,-33.893,151.057],["Lidcombe",2141,-33.864,151.047],
+    ["Auburn",2144,-33.849,151.033],["Berala",2141,-33.872,151.032],["Granville",2142,-33.832,151.011],
+    ["Merrylands",2160,-33.836,150.990],["Guildford",2161,-33.854,150.988],["Fairfield",2165,-33.872,150.956],
+    ["Cabramatta",2166,-33.895,150.935],["Canley Vale",2166,-33.887,150.946],["Liverpool",2170,-33.920,150.924],
+    ["Casula",2170,-33.950,150.900],["Moorebank",2170,-33.945,150.937],["Prestons",2170,-33.942,150.872],
+    ["Hoxton Park",2171,-33.930,150.855],["Green Valley",2168,-33.903,150.866],["Bonnyrigg",2177,-33.893,150.890],
+    ["Edensor Park",2176,-33.880,150.877],["Wetherill Park",2164,-33.846,150.900],["Smithfield",2164,-33.853,150.940],
+    ["Carnes Hill",2171,-33.937,150.848],["Horningsea Park",2171,-33.944,150.843],["Austral",2179,-33.930,150.810],
+    ["Leppington",2179,-33.957,150.803],["Edmondson Park",2174,-33.960,150.858],["Ingleburn",2565,-33.998,150.866],
+    ["Minto",2566,-34.027,150.850],["Campbelltown",2560,-34.065,150.814],["Leumeah",2560,-34.050,150.833],
+    ["Narellan",2567,-34.042,150.734],["Camden",2570,-34.055,150.696],["Oran Park",2570,-33.998,150.741],
+    ["Gregory Hills",2557,-34.025,150.770],["Macquarie Fields",2564,-33.990,150.886],["Glenfield",2167,-33.971,150.893],
+    ["Holsworthy",2173,-33.986,150.958],["Wattle Grove",2173,-33.965,150.938],["Menai",2234,-34.013,151.010],
+    ["Sutherland",2232,-34.031,151.058],["Miranda",2228,-34.034,151.101],["Caringbah",2229,-34.042,151.122],
+    ["Cronulla",2230,-34.057,151.152],["Engadine",2233,-34.065,151.012],["Hurstville",2220,-33.967,151.102],
+    ["Kogarah",2217,-33.963,151.133],["Rockdale",2216,-33.953,151.137],["Mortdale",2223,-33.971,151.081],
+    ["Peakhurst",2210,-33.958,151.062],["Riverwood",2210,-33.950,151.052],["Beverly Hills",2209,-33.948,151.080],
+    ["Bexley",2207,-33.950,151.123],["Arncliffe",2205,-33.936,151.147],["Marrickville",2204,-33.911,151.155],
+    ["Dulwich Hill",2203,-33.905,151.139],["Strathfield",2135,-33.880,151.083],["Burwood",2134,-33.877,151.104],
+    ["Ashfield",2131,-33.888,151.125],["Five Dock",2046,-33.866,151.129],["Concord",2137,-33.857,151.104],
+    ["Homebush",2140,-33.866,151.082],["Olympic Park",2127,-33.847,151.068],["Rhodes",2138,-33.831,151.087],
+    ["Parramatta",2150,-33.815,151.003],["Westmead",2145,-33.808,150.988],["Wentworthville",2145,-33.808,150.970],
+    ["Toongabbie",2146,-33.787,150.951],["Seven Hills",2147,-33.775,150.937],["Blacktown",2148,-33.771,150.906],
+    ["Mount Druitt",2770,-33.768,150.818],["Rooty Hill",2766,-33.771,150.844],["St Marys",2760,-33.762,150.774],
+    ["Penrith",2750,-33.751,150.694],["Kingswood",2747,-33.760,150.722],["Glenmore Park",2745,-33.790,150.674],
+    ["Emu Plains",2750,-33.749,150.668],["St Clair",2759,-33.797,150.787],["Erskine Park",2759,-33.813,150.794],
+    ["Rouse Hill",2155,-33.682,150.915],["Kellyville",2155,-33.713,150.955],["Castle Hill",2154,-33.730,151.004],
+    ["Baulkham Hills",2153,-33.763,150.987],["Bella Vista",2153,-33.741,150.954],["Norwest",2153,-33.733,150.965],
+    ["Glenwood",2768,-33.734,150.925],["Stanhope Gardens",2768,-33.722,150.928],["Quakers Hill",2763,-33.734,150.886],
+    ["Schofields",2762,-33.698,150.877],["Marsden Park",2765,-33.695,150.835],["Riverstone",2765,-33.680,150.861],
+    ["Windsor",2756,-33.613,150.814],["Richmond",2753,-33.598,150.751],["Epping",2121,-33.773,151.082],
+    ["Eastwood",2122,-33.790,151.081],["Ryde",2112,-33.814,151.104],["Macquarie Park",2113,-33.778,151.122],
+    ["Carlingford",2118,-33.779,151.048],["Dundas",2117,-33.800,151.040],["Hornsby",2077,-33.704,151.099],
+    ["Chatswood",2067,-33.797,151.181],["North Sydney",2060,-33.839,151.207],["Lane Cove",2066,-33.815,151.168],
+    ["Mosman",2088,-33.829,151.244],["Manly",2095,-33.797,151.285],["Dee Why",2099,-33.752,151.288],
+    ["Brookvale",2100,-33.766,151.274],["Frenchs Forest",2086,-33.749,151.230],["Mona Vale",2103,-33.677,151.303],
+    ["Sydney CBD",2000,-33.869,151.207],["Surry Hills",2010,-33.886,151.212],["Newtown",2042,-33.898,151.179],
+    ["Leichhardt",2040,-33.884,151.157],["Glebe",2037,-33.879,151.185],["Redfern",2016,-33.893,151.205],
+    ["Alexandria",2015,-33.905,151.195],["Mascot",2020,-33.927,151.193],["Botany",2019,-33.946,151.196],
+    ["Maroubra",2035,-33.950,151.242],["Randwick",2031,-33.915,151.241],["Coogee",2034,-33.920,151.256],
+    ["Bondi",2026,-33.891,151.263],["Paddington",2021,-33.884,151.231],["Double Bay",2028,-33.878,151.243]
+  ];
+
+  // ===== state =====
+  var store = {
+    get:function(k){try{return JSON.parse(localStorage.getItem("pc_"+k));}catch(e){return null;}},
+    set:function(k,v){try{localStorage.setItem("pc_"+k,JSON.stringify(v));}catch(e){}}
+  };
+  var fuel = Object.assign({}, FUEL_DEFAULTS, store.get("fuel") || {});
+  var state = {picked:[], property:null, level:{}, price:{}, km:null, addon:"none"};
+
+  var $ = function(id){return document.getElementById(id);};
+  var money = function(n){return "$" + (Math.round(n*100)/100).toLocaleString("en-AU",{minimumFractionDigits: n%1?2:0, maximumFractionDigits:2});};
+  var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});};
+
+  function svc(id){for(var i=0;i<SERVICES.length;i++) if(SERVICES[i].id===id) return SERVICES[i];}
+  function prop(id){for(var i=0;i<PROPERTIES.length;i++) if(PROPERTIES[i].id===id) return PROPERTIES[i];}
+
+  // Range for a service, taking property into account for general pest
+  function range(s){
+    if(s.byProperty && state.property){
+      var p = prop(state.property);
+      return {low:p.low, mid:Math.round((p.low+p.high)/2), high:p.high, from:p.name};
+    }
+    return {low:s.low, mid:s.mid, high:s.high, from: s.low==null ? null : "CRM history"};
+  }
+
+  // ===== build static UI =====
+  $("svcChips").innerHTML = SERVICES.map(function(s){
+    return '<button type="button" class="chip" data-svc="'+s.id+'">'+esc(s.name)+'</button>';
+  }).join("");
+  $("propChips").innerHTML = PROPERTIES.map(function(p){
+    return '<button type="button" class="chip" data-prop="'+p.id+'">'+esc(p.name)+' <small>'+money(p.low)+'–'+money(p.high)+'</small></button>';
+  }).join("");
+  $("suburbs").innerHTML = SUBURBS.map(function(s){return '<option value="'+esc(s[0]+" "+s[1])+'">';}).join("");
+  $("priceTable").innerHTML =
+    '<tr><th>Service</th><th class="n">Low</th><th class="n">Usual</th><th class="n">High</th></tr>' +
+    PROPERTIES.map(function(p){return '<tr><td>General pest, '+esc(p.name)+'</td><td class="n">'+money(p.low)+'</td><td class="n">'+money(Math.round((p.low+p.high)/2))+'</td><td class="n">'+money(p.high)+'</td></tr>';}).join("") +
+    SERVICES.filter(function(s){return s.low!=null;}).map(function(s){return '<tr><td>'+esc(s.name)+(s.byProperty?' (no property)':'')+'</td><td class="n">'+money(s.low)+'</td><td class="n">'+money(s.mid)+'</td><td class="n">'+money(s.high)+'</td></tr>';}).join("");
+
+  $("diesel").value = fuel.diesel; $("lp100").value = fuel.lp100; $("returnTrip").checked = !!fuel.returnTrip;
+
+  // ===== distance =====
+  function haversine(a,b,c,d){
+    var R=6371, r=Math.PI/180, dLat=(c-a)*r, dLon=(d-b)*r;
+    var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return 2*R*Math.asin(Math.sqrt(x));
+  }
+  function findSuburb(q){
+    q = q.trim().toLowerCase(); if(!q) return null;
+    var pc = (q.match(/\b\d{4}\b/)||[])[0];
+    var name = q.replace(/\b\d{4}\b/,"").trim();
+    var i, s;
+    if(name){ for(i=0;i<SUBURBS.length;i++){ s=SUBURBS[i]; if(s[0].toLowerCase()===name) return s; } }
+    if(pc){ for(i=0;i<SUBURBS.length;i++){ s=SUBURBS[i]; if(String(s[1])===pc) return s; } }
+    if(name.length>=3){ for(i=0;i<SUBURBS.length;i++){ s=SUBURBS[i]; if(s[0].toLowerCase().indexOf(name)===0) return s; } }
+    return null;
+  }
+  function trip(){
+    var km = state.km;
+    if(km==null || isNaN(km)) return null;
+    var total = fuel.returnTrip ? km*2 : km;
+    var litres = total * (Number(fuel.lp100)||0) / 100;
+    return {km:km, total:total, litres:litres, fuel:litres*(Number(fuel.diesel)||0)};
+  }
+
+  // ===== render =====
+  function render(){
+    // chips
+    Array.prototype.forEach.call(document.querySelectorAll("[data-svc]"),function(b){b.classList.toggle("on",state.picked.indexOf(b.dataset.svc)>=0);});
+    Array.prototype.forEach.call(document.querySelectorAll("[data-prop]"),function(b){b.classList.toggle("on",state.property===b.dataset.prop);});
+
+    // service rows
+    $("priceCard").hidden = state.picked.length===0;
+    $("svcRows").innerHTML = state.picked.map(function(id){
+      var s = svc(id), r = range(s), lv = state.level[id], val = state.price[id];
+      var h = '<div class="svc"><div class="svc-head"><b>'+esc(s.name)+'</b><span>'+esc(r.from ? (s.byProperty && state.property ? r.from+" range" : s.note) : s.note)+'</span></div>';
+      if(r.low!=null){
+        h += '<div class="seg">' + [["low","Lowest",r.low],["mid","Usual",r.mid],["high","Highest",r.high]].map(function(o){
+          return '<button type="button" data-lv="'+o[0]+'" data-for="'+id+'" class="'+(lv===o[0]?"on":"")+'"><span>'+o[1]+'</span><b>'+money(o[2])+'</b></button>';
+        }).join("") + '</div>';
+      }
+      h += '<div class="price-in"><label for="p_'+id+'">Price $</label><input type="number" inputmode="numeric" min="0" id="p_'+id+'" data-price="'+id+'" value="'+(val==null?"":val)+'" placeholder="'+(r.low==null?"Type price":"")+'"></div>';
+      if(s.byProperty && !state.property) h += '<p class="note">Pick the property above for a tighter range.</p>';
+      if(r.low!=null && val!=null && val!=="" && Number(val) < r.low) h += '<div class="warn">Below the lowest ('+money(r.low)+'). Only go this low with a good reason.</div>';
+      if(r.high!=null && val!=null && val!=="" && Number(val) > r.high) h += '<div class="warn">Above the usual top ('+money(r.high)+'). Fine for heavy jobs; explain why to the customer.</div>';
+      if(s.thin) h += '<p class="note">Thin history: check the job before quoting.</p>';
+      return h + '</div>';
+    }).join("");
+
+    renderResult();
+  }
+
+  function renderResult(){
+    var out = $("out");
+    if(state.picked.length===0){ out.innerHTML = '<p class="empty">Pick a service to see the price.</p>'; return; }
+    var lo=0, hi=0, job=0, typedOnly=false, missing=false;
+    state.picked.forEach(function(id){
+      var r = range(svc(id)), v = state.price[id];
+      if(r.low==null){ typedOnly=true; var n=Number(v)||0; lo+=n; hi+=n; }
+      else { lo+=r.low; hi+=r.high; }
+      if(v==null || v==="") missing=true; else job+=Number(v)||0;
+    });
+    var t = trip(), h = "";
+    h += '<div class="row big"><span>You can quote</span><b>'+money(lo)+(hi!==lo?' – '+money(hi):'')+'</b></div>';
+    h += '<div class="row"><span>Don\'t go below</span><b>'+money(lo)+'</b></div>';
+    if(t){
+      h += '<div class="row"><span>Distance from '+BASE.name+'</span><b>'+Math.round(t.km)+' km each way</b></div>';
+      h += '<div class="row"><span>Diesel '+(fuel.returnTrip?'there and back':'one way')+' ('+Math.round(t.total)+' km, '+t.litres.toFixed(1)+' L)</span><b>'+money(t.fuel)+'</b></div>';
+    } else {
+      h += '<p class="muted">Add the suburb to see distance and diesel cost.</p>';
+    }
+    if(job>0){
+      h += '<div class="row"><span>Job price'+(missing?' (some prices not set)':'')+'</span><b>'+money(job)+'</b></div>';
+      if(t){
+        var fuelAdd = Math.max(5, Math.ceil(t.fuel/5)*5);
+        var opts = [["none","No add-on",0],["fuel","Fuel +"+money(fuelAdd),fuelAdd]].concat(ADDONS.map(function(a){return ["a"+a,"+"+money(a),a];}));
+        var add = 0; opts.forEach(function(o){ if(o[0]===state.addon) add=o[2]; });
+        h += '<p class="muted" style="margin:10px 0 6px">Far job? Add travel to the quote:</p><div class="chips">' +
+          opts.map(function(o){return '<button type="button" class="chip '+(state.addon===o[0]?"on":"")+'" data-addon="'+o[0]+'">'+o[1]+'</button>';}).join("") + '</div>';
+        h += '<div class="quote"><div class="row"><span>Quote the customer</span><b>'+money(job+add)+'</b></div>' +
+             '<div class="row" style="font-size:14px"><span>Left after diesel</span><span>'+money(job+add-t.fuel)+'</span></div></div>';
+        h += '<p class="muted" style="margin-top:8px">Estimate only: straight line to the suburb centre, then +30% for roads.</p>';
+      } else {
+        h += '<div class="quote"><div class="row"><span>Quote the customer</span><b>'+money(job)+'</b></div></div>';
+      }
+    } else {
+      h += '<p class="muted" style="margin-top:8px">'+(typedOnly?'Type a price for each service.':'Tap Lowest, Usual or Highest to set the job price.')+'</p>';
+    }
+    out.innerHTML = h;
+  }
+
+  // ===== events =====
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.svc){
+      var id=b.dataset.svc, i=state.picked.indexOf(id);
+      if(i>=0){ state.picked.splice(i,1); delete state.level[id]; delete state.price[id]; }
+      else {
+        state.picked.push(id);
+        var r = range(svc(id));
+        if(r.mid!=null){ state.level[id]="mid"; state.price[id]=r.mid; }
+      }
+      render();
+    } else if(b.dataset.prop){
+      state.property = state.property===b.dataset.prop ? null : b.dataset.prop;
+      if(state.picked.indexOf("general")<0) state.picked.unshift("general");
+      var rg = range(svc("general")), lv = state.level.general || "mid";
+      state.level.general = lv; state.price.general = rg[lv];
+      render();
+    } else if(b.dataset.lv){
+      var sid=b.dataset.for, r2=range(svc(sid));
+      state.level[sid]=b.dataset.lv; state.price[sid]=r2[b.dataset.lv];
+      render();
+    } else if(b.dataset.addon){
+      state.addon = b.dataset.addon; renderResult();
+    } else if(b.id==="resetAll"){
+      state = {picked:[], property:null, level:{}, price:{}, km:null, addon:"none"};
+      $("where").value=""; $("kmIn").value=""; $("whereNote").textContent="Or type the km one way:";
+      render(); window.scrollTo(0,0);
+    } else if(b.id==="resetFuel"){
+      fuel = Object.assign({}, FUEL_DEFAULTS); store.set("fuel", fuel);
+      $("diesel").value=fuel.diesel; $("lp100").value=fuel.lp100; $("returnTrip").checked=fuel.returnTrip;
+      renderResult();
+    }
+  });
+
+  document.addEventListener("input", function(e){
+    var el = e.target;
+    if(el.dataset && el.dataset.price){
+      var id = el.dataset.price;
+      state.price[id] = el.value==="" ? null : Number(el.value);
+      state.level[id] = null;
+      // update level highlight and warnings without losing focus
+      var pos = el.selectionStart; render();
+      var again = $("p_"+id); if(again){ again.focus(); try{again.setSelectionRange(pos,pos);}catch(x){} }
+    } else if(el.id==="where"){
+      var s = findSuburb(el.value);
+      if(s){
+        state.km = haversine(BASE.lat,BASE.lon,s[2],s[3]) * ROAD_FACTOR;
+        $("kmIn").value = Math.round(state.km);
+        $("whereNote").textContent = s[0]+" "+s[1]+": about "+Math.round(state.km)+" km by road. Change the km if you know better:";
+      } else {
+        $("whereNote").textContent = el.value.trim() ? "Suburb not in the list. Type the km one way:" : "Or type the km one way:";
+      }
+      renderResult();
+    } else if(el.id==="kmIn"){
+      state.km = el.value==="" ? null : Number(el.value); renderResult();
+    } else if(el.id==="diesel" || el.id==="lp100" || el.id==="returnTrip"){
+      fuel.diesel = Number($("diesel").value)||0; fuel.lp100 = Number($("lp100").value)||0; fuel.returnTrip = $("returnTrip").checked;
+      store.set("fuel", fuel); renderResult();
+    }
+  });
+  $("returnTrip").addEventListener("change", function(){ fuel.returnTrip=this.checked; store.set("fuel",fuel); renderResult(); });
+
+  render();
+})();
+</script>
+</body>
+</html>
