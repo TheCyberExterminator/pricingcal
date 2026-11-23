@@ -1,24 +1,25 @@
 # Pestable Price Check
 
-A one-page pricing calculator for technicians: `index.html`. There's no build step and no server, and it works on any phone.
+A one-page pricing calculator for technicians: `index.html`. There's no build step and no server. It's made for iPhone 13 Pro Max to 16 Pro Max, works offline once loaded, and has a dark mode for night.
 
-It matches the Price check page in the Pest CRM (the same prices, postcode lookup and diesel maths) and adds a few extras.
+It matches the Price check page in the Pest CRM (same prices, postcode lookup and diesel maths) and adds the extras below.
 
-## What it does
-1. Type the postcode on the number pad, or start typing the suburb. Every suburb in Sydney, the Central Coast and the Illawarra is built in (1,335 of them) and it works offline.
-2. Tap the service(s). You can pick more than one.
-3. Tap the property: Unit, Granny flat, Single storey or Double storey. This sets the General pest range.
-4. Tap **Lowest / Usual / Highest**, or type a price. It warns if the price is below the lowest or above the top.
-5. Read the quote: the range, the lowest to go, the distance from Potts Hill, the diesel cost, a travel add-on (Fuel / +$20 / +$30, marked "suggested" past 30 km), the total, and what's left after diesel.
-6. **Copy**, **Text** or **WhatsApp** the quote to the customer.
+## How a tech uses it
+1. **Where:** type the postcode, tap **📍 I'm at the job** (GPS), or tap a recent suburb. All 1,335 suburbs in Sydney, the Central Coast and the Illawarra are built in.
+2. **Services:** big tiles, tap all that apply.
+3. **Property:** sets the general pest range.
+4. **Price:** tap Lowest / Usual / Highest, nudge with **−10 / +10**, or type a price. It warns below the lowest or above the top.
+5. **Quote:** the range, the lowest to go, km, drive time (normal and peak), diesel, the travel add-on, the total and what's left after diesel. **Copy / Text / WhatsApp** sends it to the customer.
 
-## Prices
-These are at the top of the `<script>` in `index.html` (`SERVICES`, `PROPERTY`, `VEHICLE_DEFAULTS`).
-- General pest by property: Unit $120–189, Granny $150–200, Single $180–289, Double $250–300.
-- Other services come from 173 CRM bookings. Jobs at $100 or under are left out.
+The total stays pinned at the bottom of the screen the whole time.
+
+## Settings (top of the `<script>` in index.html)
+- `SERVICES`, `PROPERTY`: prices.
+- `VEHICLE_DEFAULTS`: diesel $2.38/L, 11 L/100 km (the quote also shows the cost at 10–12 L), return trip.
+- Drive time: the first 10 km at 35 km/h, then 65 km/h, and +50% in peak hour.
+- Techs can change diesel, fuel use and "drive from" (Potts Hill or their GPS location) on the phone.
 
 ## Publish with GitHub Pages
-Go to Settings → Pages → Deploy from a branch, pick the branch and `/ (root)`, then save.
-The link will be `https://<user>.github.io/pricingcal/`.
+Go to Settings → Pages → Deploy from a branch, pick the branch and `/ (root)`, then save. The link will be `https://thecyberexterminator.github.io/pricingcal/`. GPS needs that https link. On the iPhone, use Safari → Share → **Add to Home Screen** so it opens like an app.
 
 Suburb locations come from the matthewproctor/australianpostcodes list.
