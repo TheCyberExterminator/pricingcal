@@ -6,9 +6,9 @@ It matches the Price check page in the Pest CRM (same prices, postcode lookup an
 
 ## How a tech uses it
 1. **Where:** type the postcode, tap **📍 I'm at the job** (GPS), or tap a recent suburb. All 1,335 suburbs in Sydney, the Central Coast and the Illawarra are built in.
-2. **Services:** big tiles, tap all that apply.
+2. **Pest:** big tiles with icons, tap all that apply.
 3. **Property:** sets the general pest range.
-4. **Price:** tap Lowest / Usual / Highest, nudge with **−10 / +10**, or type a price. It warns below the lowest or above the top.
+4. **Price:** drag the slider left to right through **Low** (amber), **Medium** (green) and **High** (blue). It moves in $5 steps and the price and band show big. You can also tap Low / Medium / High, nudge with **−5 / +5**, or type a price. It warns below the lowest or above the top.
 5. **Quote:** the range, the lowest to go, km, drive time (normal and peak), diesel, the travel add-on, the total and what's left after diesel. **Copy / Text / WhatsApp** sends it to the customer.
 
 The total stays pinned at the bottom of the screen the whole time.

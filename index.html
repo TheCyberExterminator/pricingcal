@@ -5,151 +5,221 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pestable Price Check</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#14213d">
+<meta name="theme-color" content="#0f2a44">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Price Check">
 <meta name="format-detection" content="telephone=no">
 <style>
   :root{
-    --bg:#eef1f5; --card:#fff; --ink:#14213d; --muted:#5b6475; --line:#d9dfe8;
-    --brand:#14213d; --accent:#2e9e4f; --accent-ink:#fff; --soft:#e5f4ea;
-    --warn:#a14a06; --warn-bg:#fff4e0; --chip:#f5f7fa; --bar:#14213d;
+    --bg:#eef2f7; --card:#ffffff; --ink:#102a43; --muted:#5a6b7f; --line:#d8e0ea; --chip:#f6f8fb;
+    --brand:#0f2a44; --brand-2:#163a5c;
+    --go:#16a34a; --go-ink:#ffffff; --go-soft:#e7f6ec;
+    --low:#d97706; --low-soft:#fdf1e1;
+    --mid:#16a34a; --mid-soft:#e7f6ec;
+    --high:#2563eb; --high-soft:#e6eefd;
+    --warn:#9a4a00; --warn-bg:#fff3dc;
+    --shadow:0 1px 2px rgba(16,42,67,.06),0 4px 14px rgba(16,42,67,.06);
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#0b1020; --card:#151c2f; --ink:#eef2f8; --muted:#a3adc2; --line:#2a3550;
-      --brand:#0f1730; --accent:#34b25a; --soft:#18372a; --warn:#ffb466; --warn-bg:#3a2a12; --chip:#1c2540; --bar:#0f1730;
+      --bg:#0a1424; --card:#122035; --ink:#eaf1f8; --muted:#9fb0c3; --line:#24364f; --chip:#18294180;
+      --brand:#0b1b30; --brand-2:#122a47;
+      --go:#22b35a; --go-soft:#123425;
+      --low:#f59e0b; --low-soft:#3a2a10;
+      --mid:#22c55e; --mid-soft:#123425;
+      --high:#60a5fa; --high-soft:#14284a;
+      --warn:#ffc078; --warn-bg:#3a2a12;
+      --shadow:none;
     }
+    .step .num{background:#2b4c74}
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
-  header{background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  header h1{margin:0;font-size:20px}
-  header button{appearance:none;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px;min-height:44px;cursor:pointer}
-  main{max-width:480px;margin:0 auto;padding:4px max(12px, env(safe-area-inset-left)) 130px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
-  .card h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  button{font:inherit;color:inherit;cursor:pointer}
+  main,.bar,header{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  input[type=text]{-webkit-user-select:text;user-select:text}
+
+  /* header */
+  header{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 14px}
+  .hd{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hd h1{margin:0;font-size:21px;letter-spacing:.2px}
+  .hd p{margin:2px 0 0;font-size:13px;color:#b9cde2}
+  .hd button{appearance:none;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:8px 14px;font-size:15px;font-weight:600;min-height:44px}
+
+  main{max-width:480px;margin:0 auto;padding:6px 12px 140px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}
+  .step{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+  .step .num{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none}
+  .step.done .num{background:var(--go)}
+  .step h2{margin:0;font-size:17px}
+  .step .hint{margin-left:auto;font-size:13px;color:var(--muted)}
+
+  /* tiles */
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .tile{appearance:none;border:2px solid var(--line);background:var(--chip);color:var(--ink);border-radius:14px;padding:10px 12px;font:inherit;font-size:17px;font-weight:600;cursor:pointer;min-height:58px;text-align:left;line-height:1.2}
-  .tile small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:2px}
-  .tile.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-  .tile.on small{color:rgba(255,255,255,.85)}
-  .tile.center{text-align:center}
+  .tile{appearance:none;display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--chip);border-radius:14px;padding:10px;min-height:62px;text-align:left;line-height:1.15;font-size:16px;font-weight:600}
+  .tile .ic{font-size:24px;width:30px;text-align:center;flex:none}
+  .tile small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:3px}
+  .tile.on{border-color:var(--go);background:var(--go-soft)}
+  .tile.on .ic{filter:none}
+  .tile.on::after{content:"✓";margin-left:auto;width:24px;height:24px;flex:none;border-radius:50%;background:var(--go);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800}
+  .tile.center{justify-content:center;text-align:center;flex-direction:column;gap:0}
+  .tile.center.on::after{display:none}
+
+  /* location */
+  .loc{display:flex;gap:8px}
+  input[type=text]{font:inherit;font-size:20px;border:2px solid var(--line);border-radius:14px;padding:10px 12px;width:100%;background:var(--card);color:var(--ink);min-height:58px}
+  input[type=text]:focus{outline:none;border-color:var(--go)}
+  .post{max-width:140px;font-size:26px !important;font-weight:700;letter-spacing:4px;text-align:center}
+  .gps{flex:1;appearance:none;border:0;background:var(--go);color:#fff;border-radius:14px;font-size:17px;font-weight:700;min-height:58px;padding:6px 10px}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{appearance:none;border:1.5px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:10px 14px;font:inherit;font-size:16px;cursor:pointer;min-height:48px}
-  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
-  .chip small{opacity:.75}
-  .row1{display:flex;gap:8px;align-items:stretch}
-  input[type=text]{font:inherit;font-size:20px;border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;background:var(--card);color:var(--ink);min-height:56px}
-  input:focus{outline:none;border-color:var(--accent)}
-  .post{max-width:150px;font-size:26px !important;letter-spacing:4px;text-align:center}
-  .gps{flex:1;appearance:none;border:2px solid var(--accent);background:var(--soft);color:var(--ink);border-radius:12px;font:inherit;font-size:16px;font-weight:600;cursor:pointer;min-height:56px;padding:6px 10px}
-  .lbl{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
-  .place{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:10px}
-  .place b{font-size:19px}
-  .place small{display:block;color:var(--muted);font-size:14px}
-  .btn{appearance:none;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;min-height:44px}
+  .chip{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:999px;padding:10px 14px;font-size:16px;min-height:48px}
+  .chip small{color:var(--muted)}
+  .chip.on{background:var(--go);border-color:var(--go);color:#fff;font-weight:700}
+  .chip.on small{color:#e7f6ec}
+  .lbl{display:block;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:14px 0 8px}
+  .place{display:flex;align-items:center;gap:12px;background:var(--go-soft);border:2px solid var(--go);border-radius:14px;padding:10px 12px}
+  .place .pin{font-size:26px}
+  .place b{font-size:20px;display:block}
+  .place small{color:var(--muted);font-size:14px}
+  .place button{margin-left:auto;appearance:none;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;font-size:15px;min-height:44px}
   .note{font-size:14px;color:var(--muted);margin:8px 0 0}
-  .warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:8px}
-  .svc{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+
+  /* price slider */
+  .svc{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
   .svc:first-child{border-top:0;margin-top:0;padding-top:0}
-  .svc-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-  .svc-head b{font-size:18px}
-  .svc-head span{font-size:13px;color:var(--muted);text-align:right}
-  .seg{margin:10px 0 8px}
-  .seg .tile{text-align:center;min-height:62px}
-  .seg .tile small{margin:0 0 2px}
-  .seg .tile b{font-size:19px}
-  .stepper{display:grid;grid-template-columns:64px 1fr 64px;gap:8px;align-items:center}
-  .stepper button{appearance:none;border:2px solid var(--line);background:var(--chip);color:var(--ink);border-radius:12px;font:inherit;font-size:18px;font-weight:700;min-height:56px;cursor:pointer}
-  .stepper input{text-align:center;font-size:24px;font-weight:700}
-  .result{background:var(--brand);color:#fff;border:0}
-  .result h2{color:#9fe3b4}
-  .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:16px;border-bottom:1px solid rgba(255,255,255,.12)}
-  .row b{white-space:nowrap;text-align:right}
-  .row .sub{display:block;font-size:13px;color:rgba(255,255,255,.65);font-weight:400}
-  .row.big{font-size:18px;align-items:baseline}
-  .row.big b{font-size:26px}
-  .result .muted{color:rgba(255,255,255,.72);font-size:14px}
-  .result .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff}
-  .result .chip.on{background:var(--accent);border-color:var(--accent)}
-  .tag{display:inline-block;margin-left:6px;font-size:11px;background:#9fe3b4;color:#14213d;border-radius:6px;padding:1px 5px;font-weight:700;vertical-align:middle}
-  .quote{background:var(--accent);border-radius:14px;padding:12px 14px;margin-top:12px}
-  .quote .row{border:0;padding:2px 0;align-items:baseline}
-  .quote b{font-size:32px}
-  .share{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
-  .share a,.share button{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;text-decoration:none;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
-  details summary{cursor:pointer;font-weight:600;padding:6px 0;min-height:36px;font-size:17px}
+  .svc-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .svc-top .nm{font-size:17px;font-weight:700}
+  .svc-top .nm small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+  .pill{display:inline-flex;flex-direction:column;align-items:flex-end}
+  .pill .zone{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+  .pill .val{font-size:32px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+  .z-low .zone{background:var(--low-soft);color:var(--low)} .z-low .val{color:var(--low)}
+  .z-mid .zone{background:var(--mid-soft);color:var(--mid)} .z-mid .val{color:var(--mid)}
+  .z-high .zone{background:var(--high-soft);color:var(--high)} .z-high .val{color:var(--high)}
+  .z-out .zone{background:var(--warn-bg);color:var(--warn)} .z-out .val{color:var(--warn)}
+  .z-none .zone{display:none}
+
+  .slider{position:relative;margin:14px 4px 4px;height:44px}
+  .track{position:absolute;left:0;right:0;top:15px;height:14px;border-radius:999px;overflow:hidden;display:flex}
+  .track i{flex:1;opacity:.28}
+  .track i:nth-child(1){background:var(--low)} .track i:nth-child(2){background:var(--mid)} .track i:nth-child(3){background:var(--high)}
+  .fill{position:absolute;left:0;top:15px;height:14px;border-radius:999px;background:linear-gradient(90deg,var(--low),var(--mid) 50%,var(--high));background-size:var(--w,100%) 100%;pointer-events:none}
+  input[type=range]{position:absolute;inset:0;width:100%;height:44px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;touch-action:pan-y}
+  input[type=range]::-webkit-slider-runnable-track{height:44px;background:transparent}
+  input[type=range]::-moz-range-track{height:44px;background:transparent}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:40px;height:40px;margin-top:2px;border-radius:50%;background:#fff;border:4px solid var(--zc,var(--mid));box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#fff;border:4px solid var(--zc,var(--mid));box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  input[type=range]:focus{outline:none}
+  .marks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+  .marks button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:12px;padding:6px 4px;min-height:52px;line-height:1.15}
+  .marks button span{display:block;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+  .marks button b{font-size:16px}
+  .marks .m-low span{color:var(--low)} .marks .m-mid span{color:var(--mid)} .marks .m-high span{color:var(--high)}
+  .marks .m-low.on{border-color:var(--low);background:var(--low-soft)}
+  .marks .m-mid.on{border-color:var(--mid);background:var(--mid-soft)}
+  .marks .m-high.on{border-color:var(--high);background:var(--high-soft)}
+  .fine{display:grid;grid-template-columns:60px 1fr 60px;gap:8px;margin-top:10px}
+  .fine button{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:12px;font-size:17px;font-weight:700;min-height:50px}
+  .fine input{text-align:center;font-size:20px;font-weight:700;min-height:50px}
+  .warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:8px}
+
+  /* quote */
+  .hero{background:linear-gradient(135deg,var(--go),#0f8a3c);color:#fff;border-radius:16px;padding:14px 16px}
+  .hero .t{font-size:14px;font-weight:600;opacity:.9}
+  .hero .v{font-size:46px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+  .hero .s{font-size:14px;opacity:.92;margin-top:4px}
+  .hero.empty{background:var(--chip);color:var(--muted);border:2px dashed var(--line)}
+  .hero.empty .v{font-size:20px;font-weight:600}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .stat{background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-size:20px;font-weight:800;margin-top:2px}
+  .stat .s{font-size:12px;color:var(--muted)}
+  .rangebar{margin-top:10px;background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .rangebar .ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
+  .rangebar .ends b{color:var(--ink);font-size:15px}
+  .rb{position:relative;height:12px;border-radius:999px;background:linear-gradient(90deg,var(--low),var(--mid),var(--high));opacity:.9}
+  .rb .dot{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;border:4px solid var(--ink)}
+  .rows{margin-top:8px}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:16px}
+  .row:last-child{border-bottom:0}
+  .row b{white-space:nowrap}
+  .row .sub{display:block;font-size:13px;color:var(--muted)}
+  .addon{margin-top:12px}
+  .addon .chip .tag{display:inline-block;margin-left:6px;font-size:11px;background:var(--low);color:#fff;border-radius:6px;padding:1px 6px;font-weight:800;vertical-align:middle}
+  .share{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+  .share a,.share button{appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;min-height:54px;border-radius:14px;border:0;text-decoration:none;font-size:16px;font-weight:700;color:#fff}
+  .share .c{background:var(--brand-2)} .share .x{background:#2563eb} .share .w{background:#1fa855}
+  details summary{cursor:pointer;font-weight:700;padding:4px 0;min-height:36px;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::-webkit-details-marker{display:none}
+  details summary::after{content:"＋";color:var(--muted)} details[open] summary::after{content:"－"}
   .toggle{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:16px;min-height:44px}
-  .toggle input{width:24px;height:24px}
-  .empty{color:rgba(255,255,255,.75);margin:0}
+  .toggle input{width:24px;height:24px;accent-color:var(--go)}
   table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;padding:8px 4px;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:600}
   .n{text-align:right;white-space:nowrap}
-  /* always-visible total, sits above the iPhone home bar */
-  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--bar);color:#fff;padding:10px 16px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.25);z-index:10}
-  .bar-in{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .bar .lft{font-size:13px;color:rgba(255,255,255,.75);line-height:1.25}
-  .bar .lft b{display:block;font-size:15px;color:#fff}
-  .bar button{appearance:none;border:0;background:var(--accent);color:#fff;border-radius:12px;padding:8px 16px;font:inherit;font-weight:700;font-size:24px;min-height:56px;cursor:pointer;white-space:nowrap}
-  .bar button small{display:block;font-size:11px;font-weight:600;opacity:.85;letter-spacing:.5px}
-  .toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+  td.l{color:var(--low);font-weight:700} td.m{color:var(--mid);font-weight:700} td.h{color:var(--high);font-weight:700}
+
+  /* sticky total */
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--brand);color:#fff;padding:10px 14px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.22);z-index:10}
+  .bar-in{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .bar .lft{flex:1;min-width:0;font-size:13px;color:#b9cde2;line-height:1.3}
+  .bar .lft b{display:block;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar button{appearance:none;border:0;background:var(--go);color:#fff;border-radius:14px;padding:6px 16px;font-weight:800;font-size:26px;min-height:58px;min-width:120px;white-space:nowrap}
+  .bar button small{display:block;font-size:11px;font-weight:700;opacity:.9;letter-spacing:1px}
+  .toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:12px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;white-space:nowrap}
   .toast.show{opacity:1}
   footer{text-align:center;font-size:13px;color:var(--muted);padding:6px 16px}
 </style>
 </head>
 <body>
-<header>
-  <h1>Pestable Price Check</h1>
+<header><div class="hd">
+  <div><h1>Pestable Price Check</h1><p>Quote fast. Know your low and high.</p></div>
   <button type="button" id="resetAll">New quote</button>
-</header>
+</div></header>
 
 <main>
-  <section class="card">
-    <h2>1. Where is the job?</h2>
-    <div class="row1">
-      <input type="text" id="post" class="post" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="2000" aria-label="Postcode">
-      <button type="button" class="gps" data-act="jobHere">📍 I'm at the job</button>
-    </div>
+  <section class="card" id="cardWhere">
+    <div class="step" id="stepWhere"><span class="num">1</span><h2>Where's the job?</h2></div>
     <div id="placeBox"></div>
   </section>
 
   <section class="card">
-    <h2>2. Services <span style="text-transform:none;letter-spacing:0">(tap all that apply)</span></h2>
+    <div class="step" id="stepSvc"><span class="num">2</span><h2>What's the pest?</h2><span class="hint">tap all that apply</span></div>
     <div class="grid2" id="svcChips"></div>
   </section>
 
   <section class="card">
-    <h2>3. Property <span style="text-transform:none;letter-spacing:0">(sets general pest price)</span></h2>
+    <div class="step" id="stepProp"><span class="num">3</span><h2>Property</h2><span class="hint">sets general pest</span></div>
     <div class="grid2" id="propChips"></div>
   </section>
 
   <section class="card" id="priceCard" hidden>
-    <h2>4. Pick the price</h2>
+    <div class="step done"><span class="num">4</span><h2>Slide to set the price</h2></div>
     <div id="svcRows"></div>
   </section>
 
-  <section class="card result" id="quoteCard">
-    <h2>Quote</h2>
+  <section class="card" id="quoteCard">
+    <div class="step"><span class="num">$</span><h2>Quote</h2></div>
     <div id="out"></div>
   </section>
 
   <section class="card">
     <details id="carBox">
-      <summary>Drive from, vehicle and diesel</summary>
+      <summary>Drive from, fuel and diesel</summary>
       <span class="lbl">Measure the drive from</span>
       <div class="grid2" id="originChips"></div>
-      <span class="lbl">Fuel use (L per 100 km)</span>
+      <span class="lbl">Fuel use (litres per 100 km)</span>
       <div class="grid3" id="lpChips"></div>
-      <span class="lbl">Diesel $ per litre</span>
+      <span class="lbl">Diesel price ($ per litre)</span>
       <input type="text" id="diesel" inputmode="decimal" autocomplete="off">
       <label class="toggle"><input type="checkbox" id="returnTrip"> Count the trip back too</label>
-      <p class="note">VW Amarok V6: 10 L/100 km on the motorway, 12 in traffic or loaded. The quote shows the diesel cost at 10–12 L/100 km. Settings are saved on this phone.</p>
-      <button class="btn" id="resetCar" type="button" style="margin-top:10px">Reset to defaults</button>
+      <p class="note">VW Amarok V6: about 10 L/100 km on the motorway, 12 in traffic or loaded. The quote shows the cost at 10–12. Saved on this phone.</p>
+      <button class="chip" id="resetCar" type="button" style="margin-top:10px">Reset to defaults</button>
     </details>
   </section>
 
@@ -157,15 +227,15 @@
     <details>
       <summary>Price list</summary>
       <table style="margin-top:8px" id="priceTable"></table>
-      <p class="note">General pest by property: the owner's ranges. Other services: what Pestable has charged, from 173 CRM bookings (Lowest is about the 10th percentile, Usual the median, Highest the 90th; jobs under $100 left out). Bed bugs has only 4 jobs, so its range is thin.</p>
+      <p class="note">General pest by property: the owner's ranges. Other services: what Pestable has charged, from 173 CRM bookings (Low ≈ 10th percentile, Medium = median, High ≈ 90th; jobs under $100 left out). Bed bugs has only 4 jobs.</p>
     </details>
   </section>
-  <footer>Estimate only. Confirm extras, access and heavy infestations on site.<br>Pull over before tapping: use it parked or hand it to a passenger.</footer>
+  <footer>Estimate only. Confirm extras, access and heavy infestations on site.<br>Tap when parked, or hand it to a passenger.</footer>
 </main>
 
-<div class="bar" id="bar"><div class="bar-in">
-  <div class="lft" id="barL">Enter a postcode<br>and tap a service</div>
-  <button type="button" data-act="toQuote" id="barBtn"><small>QUOTE</small>$0</button>
+<div class="bar"><div class="bar-in">
+  <div class="lft" id="barL"></div>
+  <button type="button" data-act="toQuote" id="barBtn"></button>
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -175,31 +245,30 @@
 
   /* ================= PRICES & SETTINGS: edit here ================= */
   // From 173 CRM bookings (24 Nov 2026). lo ≈ 10th percentile, typ = median, hi ≈ 90th.
-  // null = no history, so the technician types the price.
+  // lo/hi null = no history, so the technician types the price.
   var SERVICES = [
-    {id:"general",          name:"General pest",       lo:150, typ:200, hi:250, note:"Roaches, spiders, ants"},
-    {id:"german_cockroach", name:"German cockroaches", lo:120, typ:200, hi:250, note:"Gel bait + follow-up"},
-    {id:"rodents",          name:"Rodents",            lo:120, typ:150, hi:200, note:"Rats and mice"},
-    {id:"end_of_lease",     name:"End of lease",       lo:120, typ:150, hi:200, note:"Fleas + certificate"},
-    {id:"bed_bugs",         name:"Bed bugs",           lo:150, typ:185, hi:185, note:"Only 4 jobs: check on site", thin:true},
-    {id:"commercial",       name:"Commercial",         lo:null, typ:null, hi:null, note:"Type the price"},
-    {id:"other",            name:"Other",              lo:null, typ:null, hi:null, note:"Type the price"}
+    {id:"general",          ic:"🏠", name:"General pest",       lo:150, typ:200, hi:250, note:"Roaches, spiders, ants"},
+    {id:"german_cockroach", ic:"🪳", name:"German cockroach",   lo:120, typ:200, hi:250, note:"Gel bait + follow-up"},
+    {id:"rodents",          ic:"🐀", name:"Rodents",            lo:120, typ:150, hi:200, note:"Rats and mice"},
+    {id:"end_of_lease",     ic:"🔑", name:"End of lease",       lo:120, typ:150, hi:200, note:"Fleas + certificate"},
+    {id:"bed_bugs",         ic:"🛏️", name:"Bed bugs",           lo:150, typ:185, hi:185, note:"Only 4 jobs on record", thin:true},
+    {id:"commercial",       ic:"🏢", name:"Commercial",         lo:null, typ:null, hi:null, note:"Type the price"},
+    {id:"other",            ic:"➕", name:"Other",              lo:null, typ:null, hi:null, note:"Type the price"}
   ];
-  // General pest range by property (owner's figures). Usual = middle.
+  // General pest range by property (owner's figures). Medium = middle.
   var PROPERTY = [
-    {id:"unit",   name:"Unit",          lo:120, hi:189},
-    {id:"granny", name:"Granny flat",   lo:150, hi:200},
-    {id:"single", name:"Single storey", lo:180, hi:289},
-    {id:"double", name:"Double storey", lo:250, hi:300}
+    {id:"unit",   ic:"🏢", name:"Unit",          lo:120, hi:189},
+    {id:"granny", ic:"🛖", name:"Granny flat",   lo:150, hi:200},
+    {id:"single", ic:"🏠", name:"Single storey", lo:180, hi:289},
+    {id:"double", ic:"🏘️", name:"Double storey", lo:250, hi:300}
   ];
   var FLAT_ADDONS = [20, 30];
   var SUGGEST_ADDON_KM = 30;      // one way; past this the fuel add-on is marked "suggested"
-  var STEP = 10;                  // the − / + price buttons move by this much
+  var STEP = 5;                   // slider and − / + move by this much
   var BASE = {name:"Potts Hill", postcode:"2143", lat:-33.8854, lng:151.0219};
   var VEHICLE_DEFAULTS = {litresPer100:11, dieselPerLitre:2.38, roadFactor:1.3, returnTrip:true};
-  var LP_RANGE = [10, 12];        // fuel use range shown on the quote
-  // Drive time: first 10 road km at 35 km/h (suburbs), the rest at 65 km/h (main roads, motorway).
-  // Peak hour adds 50%. A guide, not a GPS route.
+  var LP_RANGE = [10, 12];
+  // Drive time guide: first 10 road km at 35 km/h, the rest at 65 km/h; peak hour +50%.
   var CITY_KMH = 35, OPEN_KMH = 65, CITY_KM = 10, PEAK = 1.5;
   var BUSINESS = "Pestable";
   /* ================================================================ */
@@ -213,32 +282,37 @@
   };
   var vehicle = Object.assign({}, VEHICLE_DEFAULTS, store.get("vehicle3") || {});
   var recent = store.get("recent") || [];
-  var origin = {mode:"base", here:null};   // "base" = Potts Hill, "here" = phone's location
-  function fresh(){ return {postcode:"", suburb:"", picked:null, services:[], property:null, level:{}, price:{}, addon:"none"}; }
+  var origin = {mode:"base", here:null};
+  function fresh(){ return {postcode:"", suburb:"", picked:null, services:[], property:null, price:{}, addon:"none"}; }
   var st = fresh();
 
   var $ = function(id){return document.getElementById(id);};
+  var each = function(sel,fn){Array.prototype.forEach.call(document.querySelectorAll(sel),fn);};
   var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});};
-  function money(n, cents){
-    var r=Math.round(n*100)/100, whole=Math.abs(r-Math.round(r))<0.005;
-    return (r<0?"-":"")+"$"+Math.abs(r).toLocaleString("en-AU",{minimumFractionDigits:(cents||!whole)?2:0,maximumFractionDigits:2});
-  }
-  function mins(m){ m=Math.max(5,Math.round(m/5)*5); return m<60 ? m+" min" : Math.floor(m/60)+" h "+(m%60?m%60+" min":""); }
+  function money(n,cents){ var r=Math.round(n*100)/100, whole=Math.abs(r-Math.round(r))<0.005;
+    return (r<0?"-":"")+"$"+Math.abs(r).toLocaleString("en-AU",{minimumFractionDigits:(cents||!whole)?2:0,maximumFractionDigits:2}); }
+  function mins(m){ m=Math.max(5,Math.round(m/5)*5); return m<60 ? m+" min" : Math.floor(m/60)+"h "+(m%60?m%60+"m":""); }
   function svc(id){ for(var i=0;i<SERVICES.length;i++) if(SERVICES[i].id===id) return SERVICES[i]; }
   function prop(){ for(var i=0;i<PROPERTY.length;i++) if(PROPERTY[i].id===st.property) return PROPERTY[i]; return null; }
   function rangeOf(id){
     var p=prop();
-    if(id==="general" && p) return {lo:p.lo, typ:Math.round((p.lo+p.hi)/2), hi:p.hi, src:p.name+" range"};
+    if(id==="general" && p) return {lo:p.lo, typ:Math.round((p.lo+p.hi)/2), hi:p.hi, src:p.name};
     var s=svc(id); return s.lo==null ? null : {lo:s.lo, typ:s.typ, hi:s.hi, src:s.note};
   }
-  function priceOf(id){ if(st.price[id]!==undefined) return Number(st.price[id])||0; var r=rangeOf(id); return r?r.typ:0; }
+  function priceOf(id){ if(st.price[id]!==undefined && st.price[id]!=="") return Number(st.price[id])||0; if(st.price[id]==="") return 0; var r=rangeOf(id); return r?r.typ:0; }
+  // Which band a price sits in: the range split in thirds.
+  function zoneOf(id,v){
+    var r=rangeOf(id); if(!r) return {k:"none",name:""};
+    if(v<r.lo) return {k:"out",name:"Below low"};
+    if(v>r.hi) return {k:"out",name:"Above high"};
+    var span=r.hi-r.lo; if(span<=0) return {k:"mid",name:"Medium"};
+    var f=(v-r.lo)/span;
+    return f<1/3 ? {k:"low",name:"Low"} : f<=2/3 ? {k:"mid",name:"Medium"} : {k:"high",name:"High"};
+  }
 
   /* ---------- travel ---------- */
-  function straightKm(a,b){
-    var rad=function(d){return d*Math.PI/180;}, dLat=rad(b.lat-a.lat), dLng=rad(b.lng-a.lng);
-    var h=Math.pow(Math.sin(dLat/2),2)+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.pow(Math.sin(dLng/2),2);
-    return 2*6371*Math.asin(Math.sqrt(h));
-  }
+  function straightKm(a,b){ var rad=function(d){return d*Math.PI/180;}, dLat=rad(b.lat-a.lat), dLng=rad(b.lng-a.lng);
+    var h=Math.pow(Math.sin(dLat/2),2)+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.pow(Math.sin(dLng/2),2); return 2*6371*Math.asin(Math.sqrt(h)); }
   function num(v,f){ var n=Number(v); return v!=="" && v!=null && isFinite(n) && n>0 ? n : f; }
   function from(){ return origin.mode==="here" && origin.here ? origin.here : BASE; }
   function travel(){
@@ -246,38 +320,34 @@
     var dp=num(vehicle.dieselPerLitre,VEHICLE_DEFAULTS.dieselPerLitre), lp=num(vehicle.litresPer100,VEHICLE_DEFAULTS.litresPer100);
     var oneWay=straightKm(from(),{lat:st.picked[2],lng:st.picked[3]})*VEHICLE_DEFAULTS.roadFactor;
     var km=oneWay*(vehicle.returnTrip!==false?2:1);
-    var drive=Math.min(oneWay,CITY_KM)/CITY_KMH*60 + Math.max(0,oneWay-CITY_KM)/OPEN_KMH*60;
+    var drive=Math.min(oneWay,CITY_KM)/CITY_KMH*60+Math.max(0,oneWay-CITY_KM)/OPEN_KMH*60;
     var cost=function(l){return km*l/100*dp;};
-    return {oneWayKm:oneWay, km:km, litres:km*lp/100, fuel:cost(lp), fuelLo:cost(LP_RANGE[0]), fuelHi:cost(LP_RANGE[1]), drive:drive, peak:drive*PEAK, lp:lp};
+    return {oneWayKm:oneWay, km:km, fuel:cost(lp), fuelLo:cost(LP_RANGE[0]), fuelHi:cost(LP_RANGE[1]), drive:drive, peak:drive*PEAK, lp:lp, dp:dp};
   }
   function byPostcode(d){ return d ? PLACES.filter(function(p){return p[1].indexOf(d)===0;}) : []; }
-  function bySuburb(t,limit){
-    t=String(t||"").trim().toLowerCase(); if(t.length<2) return [];
+  function bySuburb(t,limit){ t=String(t||"").trim().toLowerCase(); if(t.length<2) return [];
     var a=[],b=[]; PLACES.forEach(function(p){var n=p[0].toLowerCase(); if(n.indexOf(t)===0) a.push(p); else if(n.indexOf(t)>0) b.push(p);});
-    return a.concat(b).slice(0,limit||8);
-  }
-  function nearest(lat,lng){
-    var best=null, bd=1e9; PLACES.forEach(function(p){ var d=straightKm({lat:lat,lng:lng},{lat:p[2],lng:p[3]}); if(d<bd){bd=d;best=p;} });
-    return bd<25 ? best : null;
-  }
+    return a.concat(b).slice(0,limit||8); }
+  function nearest(lat,lng){ var best=null,bd=1e9; PLACES.forEach(function(p){var d=straightKm({lat:lat,lng:lng},{lat:p[2],lng:p[3]}); if(d<bd){bd=d;best=p;}}); return bd<25?best:null; }
   function locate(ok){
-    if(!navigator.geolocation){ toast("Location isn't available on this phone"); return; }
+    if(!navigator.geolocation){ toast("Location isn't available here"); return; }
     toast("Finding you…");
-    navigator.geolocation.getCurrentPosition(function(pos){ ok(pos.coords.latitude, pos.coords.longitude); },
-      function(err){ toast(err.code===1 ? "Location is off: allow it in Settings › Safari" : "Couldn't get a fix. Type the postcode."); },
-      {enableHighAccuracy:false, timeout:10000, maximumAge:120000});
+    navigator.geolocation.getCurrentPosition(function(pos){ok(pos.coords.latitude,pos.coords.longitude);},
+      function(err){ toast(err.code===1?"Location is off: allow it for Safari":"No GPS fix. Type the postcode."); },
+      {enableHighAccuracy:false,timeout:10000,maximumAge:120000});
   }
 
   /* ---------- static bits ---------- */
-  $("svcChips").innerHTML = SERVICES.map(function(s){return '<button type="button" class="tile" data-svc="'+s.id+'">'+esc(s.name)+'<small>'+(s.lo==null?'Type price':'$'+s.lo+'–'+s.hi)+'</small></button>';}).join("");
-  $("propChips").innerHTML = PROPERTY.map(function(p){return '<button type="button" class="tile" data-prop="'+p.id+'">'+esc(p.name)+'<small>$'+p.lo+'–'+p.hi+'</small></button>';}).join("");
-  $("priceTable").innerHTML = '<tr><th>Service</th><th class="n">Low</th><th class="n">Usual</th><th class="n">High</th></tr>' +
-    PROPERTY.map(function(p){return '<tr><td>General, '+esc(p.name)+'</td><td class="n">'+money(p.lo)+'</td><td class="n">'+money(Math.round((p.lo+p.hi)/2))+'</td><td class="n">'+money(p.hi)+'</td></tr>';}).join("") +
-    SERVICES.map(function(s){return '<tr><td>'+esc(s.name)+(s.id==="general"?' (no property)':'')+'</td>'+(s.lo==null?'<td class="n" colspan="3">Type the price</td>':'<td class="n">'+money(s.lo)+'</td><td class="n">'+money(s.typ)+'</td><td class="n">'+money(s.hi)+'</td>')+'</tr>';}).join("");
+  $("svcChips").innerHTML = SERVICES.map(function(s){return '<button type="button" class="tile" data-svc="'+s.id+'"><span class="ic">'+s.ic+'</span><span>'+esc(s.name)+'<small>'+(s.lo==null?'Type price':'$'+s.lo+'–'+s.hi)+'</small></span></button>';}).join("");
+  $("propChips").innerHTML = PROPERTY.map(function(p){return '<button type="button" class="tile" data-prop="'+p.id+'"><span class="ic">'+p.ic+'</span><span>'+esc(p.name)+'<small>$'+p.lo+'–'+p.hi+'</small></span></button>';}).join("");
+  function mid(a,b){return Math.round((a+b)/2);}
+  $("priceTable").innerHTML = '<tr><th>Service</th><th class="n">Low</th><th class="n">Medium</th><th class="n">High</th></tr>' +
+    PROPERTY.map(function(p){return '<tr><td>General, '+esc(p.name)+'</td><td class="n l">'+money(p.lo)+'</td><td class="n m">'+money(mid(p.lo,p.hi))+'</td><td class="n h">'+money(p.hi)+'</td></tr>';}).join("") +
+    SERVICES.map(function(s){return '<tr><td>'+esc(s.name)+(s.id==="general"?' (no property)':'')+'</td>'+(s.lo==null?'<td class="n" colspan="3">Type the price</td>':'<td class="n l">'+money(s.lo)+'</td><td class="n m">'+money(s.typ)+'</td><td class="n h">'+money(s.hi)+'</td>')+'</tr>';}).join("");
   function renderCar(){
-    $("originChips").innerHTML = '<button type="button" class="tile center '+(origin.mode==="base"?"on":"")+'" data-origin="base">'+BASE.name+'<small>the base</small></button>'+
+    $("originChips").innerHTML = '<button type="button" class="tile center '+(origin.mode==="base"?"on":"")+'" data-origin="base">🏁 '+BASE.name+'<small>the base</small></button>'+
       '<button type="button" class="tile center '+(origin.mode==="here"?"on":"")+'" data-origin="here">📍 Where I am<small>'+(origin.here?esc(origin.here.name):'uses GPS')+'</small></button>';
-    $("lpChips").innerHTML = [10,11,12].map(function(l){return '<button type="button" class="tile center '+(Number(vehicle.litresPer100)===l?"on":"")+'" data-lp="'+l+'">'+l+'<small>'+(l===10?'motorway':l===11?'mixed':'traffic')+'</small></button>';}).join("");
+    $("lpChips").innerHTML = [10,11,12].map(function(l){return '<button type="button" class="tile center '+(Number(vehicle.litresPer100)===l?"on":"")+'" data-lp="'+l+'">'+l+' L<small>'+(l===10?'motorway':l===11?'mixed':'traffic')+'</small></button>';}).join("");
     if(document.activeElement!==$("diesel")) $("diesel").value=vehicle.dieselPerLitre;
     $("returnTrip").checked = vehicle.returnTrip!==false;
   }
@@ -285,47 +355,70 @@
   /* ---------- render ---------- */
   function renderPlace(){
     var box=$("placeBox"), h="";
+    $("stepWhere").classList.toggle("done",!!st.picked);
     if(st.picked){
       var t=travel();
-      h='<div class="place"><span><b>'+esc(st.picked[0])+'</b> '+st.picked[1]+(t?'<small>'+Math.round(t.oneWayKm)+' km · about '+mins(t.drive)+' from '+esc(from().name)+'</small>':'')+'</span><button type="button" class="btn" data-act="clearPlace">Change</button></div>';
+      h='<div class="place"><span class="pin">📍</span><span><b>'+esc(st.picked[0])+' '+st.picked[1]+'</b>'+(t?'<small>'+Math.round(t.oneWayKm)+' km · about '+mins(t.drive)+' from '+esc(from().name)+'</small>':'')+'</span><button type="button" data-act="clearPlace">Change</button></div>';
     } else {
-      h='<input type="text" id="sub" autocomplete="off" autocapitalize="words" placeholder="…or type the suburb" value="'+esc(st.suburb)+'" style="margin-top:10px" aria-label="Suburb">';
+      h='<div class="loc"><input type="text" id="post" class="post" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="2000" aria-label="Postcode" value="'+esc(st.postcode)+'">'+
+        '<button type="button" class="gps" data-act="jobHere">📍 I\'m at the job</button></div>'+
+        '<input type="text" id="sub" autocomplete="off" autocapitalize="words" placeholder="…or type the suburb" value="'+esc(st.suburb)+'" style="margin-top:8px" aria-label="Suburb">';
       var m = st.postcode.length>=3 ? byPostcode(st.postcode).slice(0,12) : bySuburb(st.suburb);
       if(m.length) h+='<div class="chips" style="margin-top:10px">'+m.map(function(p){return '<button type="button" class="chip" data-place="'+PLACES.indexOf(p)+'">'+esc(p[0])+' <small>'+p[1]+'</small></button>';}).join("")+'</div>';
-      else if(st.postcode.length===4) h+='<p class="note">No suburb with '+esc(st.postcode)+' in Sydney, the Central Coast or the Illawarra. Check the number.</p>';
+      else if(st.postcode.length===4) h+='<p class="note">No suburb with '+esc(st.postcode)+' in Sydney, the Central Coast or the Illawarra.</p>';
       else if(st.suburb.trim().length>=2) h+='<p class="note">No match. Try fewer letters.</p>';
       else if(recent.length) h+='<span class="lbl">Recent</span><div class="chips">'+recent.map(function(r){var i=findIdx(r);return i<0?'':'<button type="button" class="chip" data-place="'+i+'">'+esc(r[0])+' <small>'+r[1]+'</small></button>';}).join("")+'</div>';
     }
-    var focused=document.activeElement && document.activeElement.id==="sub";
+    var f=document.activeElement && document.activeElement.id, pos=f && document.activeElement.selectionStart;
     box.innerHTML=h;
-    if(focused && $("sub")){ var s=$("sub"); s.focus(); s.setSelectionRange(s.value.length,s.value.length); }
+    if((f==="post"||f==="sub") && $(f)){ var el=$(f); el.focus(); try{el.setSelectionRange(pos,pos);}catch(x){} }
   }
   function findIdx(r){ for(var i=0;i<PLACES.length;i++) if(PLACES[i][0]===r[0]&&PLACES[i][1]===r[1]) return i; return -1; }
 
+  function sliderHTML(id){
+    var s=svc(id), r=rangeOf(id), v=priceOf(id), z=zoneOf(id,v);
+    var h='<div class="svc" id="s_'+id+'"><div class="svc-top"><div class="nm">'+s.ic+' '+esc(s.name)+'<small>'+esc(r?r.src:s.note)+'</small></div>'+
+          '<div class="pill z-'+z.k+'" id="pill_'+id+'"><span class="zone">'+z.name+'</span><span class="val">'+(v?money(v):'$—')+'</span></div></div>';
+    if(r && r.hi>r.lo){
+      var pct=Math.max(0,Math.min(100,(v-r.lo)/(r.hi-r.lo)*100));
+      h+='<div class="slider"><div class="track"><i></i><i></i><i></i></div><div class="fill" id="fill_'+id+'" style="width:'+pct+'%;--w:'+(pct?10000/pct:100)+'%"></div>'+
+         '<input type="range" min="'+r.lo+'" max="'+r.hi+'" step="1" value="'+Math.max(r.lo,Math.min(r.hi,v))+'" data-slide="'+id+'" aria-label="'+esc(s.name)+' price" style="--zc:var(--'+(z.k==="out"?"low":z.k)+')"></div>';
+    }
+    if(r){
+      h+='<div class="marks">'+[["lo","low","Low"],["typ","mid","Medium"],["hi","high","High"]].map(function(o){
+        return '<button type="button" class="m-'+o[1]+(v===r[o[0]]?' on':'')+'" data-lv="'+o[0]+'" data-for="'+id+'"><span>'+o[2]+'</span><b>'+money(r[o[0]])+'</b></button>';}).join("")+'</div>';
+    }
+    h+='<div class="fine"><button type="button" data-step="-'+STEP+'" data-for="'+id+'" aria-label="Down $'+STEP+'">−'+STEP+'</button>'+
+       '<input type="text" inputmode="numeric" pattern="[0-9]*" id="p_'+id+'" data-price="'+id+'" value="'+(st.price[id]!==undefined?esc(st.price[id]):(r?r.typ:""))+'" placeholder="Type $" aria-label="'+esc(s.name)+' price">'+
+       '<button type="button" data-step="'+STEP+'" data-for="'+id+'" aria-label="Up $'+STEP+'">+'+STEP+'</button></div>';
+    h+='<div id="w_'+id+'">'+warnFor(id)+'</div>';
+    if(id==="general" && !st.property) h+='<p class="note">Pick the property above for the right range.</p>';
+    return h+'</div>';
+  }
+  // Update one service's price display without rebuilding it (keeps the slider drag smooth).
+  function updateSvc(id, fromSlider){
+    var r=rangeOf(id), v=priceOf(id), z=zoneOf(id,v), pill=$("pill_"+id); if(!pill) return;
+    pill.className="pill z-"+z.k; pill.innerHTML='<span class="zone">'+z.name+'</span><span class="val">'+(v?money(v):'$—')+'</span>';
+    var sl=document.querySelector('[data-slide="'+id+'"]');
+    if(sl && r){ if(!fromSlider) sl.value=Math.max(r.lo,Math.min(r.hi,v)); sl.style.setProperty("--zc","var(--"+(z.k==="out"?"low":z.k)+")");
+      var pct=Math.max(0,Math.min(100,(v-r.lo)/(r.hi-r.lo)*100)), f=$("fill_"+id); f.style.width=pct+"%"; f.style.setProperty("--w",(pct?10000/pct:100)+"%"); }
+    each('[data-lv][data-for="'+id+'"]',function(b){ b.classList.toggle("on", r && v===r[b.dataset.lv]); });
+    var inp=$("p_"+id); if(inp && document.activeElement!==inp) inp.value = v||"";
+    $("w_"+id).innerHTML=warnFor(id);
+    renderResult();
+  }
   function renderServices(){
-    Array.prototype.forEach.call(document.querySelectorAll("[data-svc]"),function(b){var on=st.services.indexOf(b.dataset.svc)>=0;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
-    Array.prototype.forEach.call(document.querySelectorAll("[data-prop]"),function(b){var on=st.property===b.dataset.prop;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+    each("[data-svc]",function(b){var on=st.services.indexOf(b.dataset.svc)>=0;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+    each("[data-prop]",function(b){var on=st.property===b.dataset.prop;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);});
+    $("stepSvc").classList.toggle("done",st.services.length>0);
+    $("stepProp").classList.toggle("done",!!st.property);
     $("priceCard").hidden = st.services.length===0;
-    $("svcRows").innerHTML = st.services.map(function(id){
-      var s=svc(id), r=rangeOf(id), lv=st.level[id], typed=st.price[id]!==undefined;
-      if(!typed && r) lv="typ";
-      var h='<div class="svc"><div class="svc-head"><b>'+esc(s.name)+'</b><span>'+esc(r?r.src:s.note)+'</span></div>';
-      if(r) h+='<div class="grid3 seg">'+[["lo","Lowest"],["typ","Usual"],["hi","Highest"]].map(function(o){
-          return '<button type="button" class="tile '+(lv===o[0]?"on":"")+'" data-lv="'+o[0]+'" data-for="'+id+'" aria-pressed="'+(lv===o[0])+'"><small>'+o[1]+'</small><b>'+money(r[o[0]])+'</b></button>';}).join("")+'</div>';
-      h+='<div class="stepper" style="'+(r?'':'margin-top:10px')+'"><button type="button" data-step="-'+STEP+'" data-for="'+id+'" aria-label="Down $'+STEP+'">−'+STEP+'</button>'+
-         '<input type="text" inputmode="numeric" pattern="[0-9]*" id="p_'+id+'" data-price="'+id+'" value="'+(typed?esc(st.price[id]):(r?r.typ:""))+'" placeholder="$ price" aria-label="'+esc(s.name)+' price">'+
-         '<button type="button" data-step="'+STEP+'" data-for="'+id+'" aria-label="Up $'+STEP+'">+'+STEP+'</button></div>';
-      h+='<div id="w_'+id+'">'+warnFor(id)+'</div>';
-      if(id==="general" && !st.property) h+='<p class="note">Pick the property for a tighter range.</p>';
-      return h+'</div>';
-    }).join("");
+    $("svcRows").innerHTML = st.services.map(sliderHTML).join("");
   }
   function warnFor(id){
     var r=rangeOf(id), v=priceOf(id), s=svc(id);
-    if(st.price[id]!==undefined && st.price[id]!=="" && r){
-      if(v<r.lo) return '<div class="warn">Below the lowest ('+money(r.lo)+'). Only go this low with a good reason.</div>';
-      if(v>r.hi) return '<div class="warn">Above the usual top ('+money(r.hi)+'). Fine for a heavy job; tell the customer why.</div>';
-    }
+    if(r && v && v<r.lo) return '<div class="warn">⚠️ Below the lowest ('+money(r.lo)+'). Only with a good reason.</div>';
+    if(r && v>r.hi) return '<div class="warn">⬆️ Above the usual top ('+money(r.hi)+'). Fine for a heavy job; tell the customer why.</div>';
     return s.thin ? '<p class="note">Thin history: check the job before quoting.</p>' : "";
   }
 
@@ -333,60 +426,66 @@
     var lo=0,hi=0,job=0,missing=[],ranged=0;
     st.services.forEach(function(id){ var r=rangeOf(id), p=priceOf(id); job+=p; if(!p) missing.push(svc(id).name); if(r){lo+=r.lo;hi+=r.hi;ranged++;} else {lo+=p;hi+=p;} });
     var t=travel(), add=0, fuelAdd=0;
-    if(t){ fuelAdd=Math.max(5,Math.ceil(t.fuel/5)*5); add = st.addon==="fuel" ? fuelAdd : (FLAT_ADDONS.indexOf(+st.addon)>=0 ? +st.addon : 0); }
-    return {lo:lo,hi:hi,job:job,missing:missing,ranged:ranged,t:t,add:add,fuelAdd:fuelAdd};
+    if(t){ fuelAdd=Math.max(5,Math.ceil(t.fuel/5)*5); add=st.addon==="fuel"?fuelAdd:(FLAT_ADDONS.indexOf(+st.addon)>=0?+st.addon:0); }
+    return {lo:lo,hi:hi,job:job,missing:missing,ranged:ranged,t:t,add:add,fuelAdd:fuelAdd,total:job+add};
   }
   function quoteText(T){
     var L=[BUSINESS+" quote"]; if(st.picked) L.push(st.picked[0]+" "+st.picked[1]);
     st.services.forEach(function(id){ L.push("- "+svc(id).name+(id==="general"&&prop()?" ("+prop().name+")":"")+": "+money(priceOf(id))); });
     if(T.add>0) L.push("- Travel: "+money(T.add));
-    L.push("Total: "+money(T.job+T.add)); return L.join("\n");
+    L.push("Total: "+money(T.total)); return L.join("\n");
   }
 
   function renderResult(){
-    var out=$("out"), T=totals(), t=T.t, h="";
-    if(!st.picked && !st.services.length) out.innerHTML='<p class="empty">Enter a postcode and tap a service.</p>';
-    else {
-      if(st.services.length && T.ranged){
-        h+='<div class="row big"><span>You can quote</span><b>'+money(T.lo)+(T.hi!==T.lo?' – '+money(T.hi):'')+'</b></div>';
-        h+='<div class="row"><span>Don\'t go below</span><b>'+money(T.lo)+'</b></div>';
-      }
-      if(t){
-        h+='<div class="row"><span>Distance from '+esc(from().name)+'</span><b>'+Math.round(t.oneWayKm)+' km each way</b></div>';
-        h+='<div class="row"><span>Drive time</span><b>about '+mins(t.drive)+'<span class="sub">'+mins(t.peak)+' in peak hour</span></b></div>';
-        h+='<div class="row"><span>Diesel '+(vehicle.returnTrip!==false?'there and back':'one way')+'<span class="sub">'+Math.round(t.km)+' km at '+t.lp+' L/100 · $'+Number(vehicle.dieselPerLitre).toFixed(2)+'/L</span></span><b>'+money(t.fuel,true)+'<span class="sub">'+money(t.fuelLo,true)+'–'+money(t.fuelHi,true)+' at '+LP_RANGE[0]+'–'+LP_RANGE[1]+' L</span></b></div>';
-      }
-      if(st.services.length) h+='<div class="row"><span>Job price</span><b>'+money(T.job)+'</b></div>';
-      if(t && T.job>0){
-        var far=t.oneWayKm>SUGGEST_ADDON_KM;
-        var opts=[["none","No add-on"],["fuel","Fuel +"+money(T.fuelAdd)]].concat(FLAT_ADDONS.map(function(a){return [String(a),"+"+money(a)];}));
-        h+='<p class="muted" style="margin:12px 0 8px">'+(far?'Far job ('+Math.round(t.oneWayKm)+' km). Add travel:':'Far job? Add travel:')+'</p><div class="chips">'+
-          opts.map(function(o){return '<button type="button" class="chip '+(st.addon===o[0]?"on":"")+'" data-addon="'+o[0]+'">'+o[1]+(far&&o[0]==="fuel"?'<span class="tag">suggested</span>':'')+'</button>';}).join("")+'</div>';
-      }
-      if(T.job>0){
-        h+='<div class="quote"><div class="row"><span>Quote the customer</span><b>'+money(T.job+T.add)+'</b></div>'+
-          (t?'<div class="row" style="font-size:15px"><span>Left after diesel</span><span>'+money(T.job+T.add-t.fuel,true)+'</span></div>':'')+'</div>';
-        var msg=quoteText(T);
-        h+='<div class="share"><button type="button" data-act="copy">Copy</button><a href="sms:?&body='+encodeURIComponent(msg)+'">Text</a><a href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">WhatsApp</a></div>';
-      }
-      if(T.missing.length) h+='<p class="muted" style="margin-top:10px">Type a price for: '+esc(T.missing.join(", "))+'.</p>';
-      if(!st.services.length) h+='<p class="muted" style="margin-top:10px">Tap a service to price the job.</p>';
-      if(t) h+='<p class="muted" style="margin-top:8px">Estimate: straight line to the suburb centre +30% for roads. Drive time is a guide, not a GPS route.</p>';
-      out.innerHTML=h;
+    var T=totals(), t=T.t, h="";
+    if(T.job>0){
+      h+='<div class="hero"><div class="t">Quote the customer</div><div class="v">'+money(T.total)+'</div>'+
+         '<div class="s">'+(T.add?money(T.job)+' job + '+money(T.add)+' travel':'Job price')+(t?' · '+money(T.total-t.fuel,true)+' left after diesel':'')+'</div></div>';
+    } else {
+      h+='<div class="hero empty"><div class="v">'+(st.services.length?'Set a price for each service':'Pick the suburb and the pest')+'</div></div>';
     }
-    // bottom bar
-    var l = st.picked ? esc(st.picked[0])+(t?' · '+Math.round(t.oneWayKm)+' km · '+mins(t.drive):'') : 'No suburb yet';
-    var r2 = T.ranged ? 'Range '+money(T.lo)+(T.hi!==T.lo?'–'+money(T.hi):'') : (st.services.length?'':'Tap a service');
-    $("barL").innerHTML='<b>'+l+'</b>'+r2+(t?' · diesel '+money(t.fuel):'');
-    $("barBtn").innerHTML='<small>QUOTE</small>'+money(T.job+T.add);
+    if(st.services.length && T.ranged && T.hi>T.lo){
+      var pct=Math.max(0,Math.min(100,(T.job-T.lo)/(T.hi-T.lo)*100));
+      h+='<div class="rangebar"><div class="rb"><span class="dot" style="left:'+pct+'%"></span></div>'+
+         '<div class="ends"><span>Don\'t go below<br><b>'+money(T.lo)+'</b></span><span style="text-align:right">Top of range<br><b>'+money(T.hi)+'</b></span></div></div>';
+    }
+    if(t){
+      h+='<div class="stats">'+
+        '<div class="stat"><div class="k">Distance</div><div class="v">'+Math.round(t.oneWayKm)+' km</div><div class="s">each way</div></div>'+
+        '<div class="stat"><div class="k">Drive</div><div class="v">'+mins(t.drive)+'</div><div class="s">'+mins(t.peak)+' peak</div></div>'+
+        '<div class="stat"><div class="k">Diesel</div><div class="v">'+money(t.fuel)+'</div><div class="s">'+money(t.fuelLo)+'–'+money(t.fuelHi)+'</div></div></div>';
+    }
+    if(t && T.job>0){
+      var far=t.oneWayKm>SUGGEST_ADDON_KM;
+      var opts=[["none","No add-on"],["fuel","Fuel +"+money(T.fuelAdd)]].concat(FLAT_ADDONS.map(function(a){return [String(a),"+"+money(a)];}));
+      h+='<div class="addon"><span class="lbl" style="margin-top:4px">'+(far?'Far job: add travel?':'Add travel?')+'</span><div class="chips">'+
+        opts.map(function(o){return '<button type="button" class="chip '+(st.addon===o[0]?"on":"")+'" data-addon="'+o[0]+'">'+o[1]+(far&&o[0]==="fuel"?'<span class="tag">TIP</span>':'')+'</button>';}).join("")+'</div></div>';
+    }
+    if(st.services.length){
+      h+='<div class="rows">'+st.services.map(function(id){var v=priceOf(id), z=zoneOf(id,v);
+        return '<div class="row"><span>'+svc(id).ic+' '+esc(svc(id).name)+(z.name?'<span class="sub">'+z.name+'</span>':'')+'</span><b>'+(v?money(v):'—')+'</b></div>';}).join("")+
+        (T.add?'<div class="row"><span>🚐 Travel</span><b>'+money(T.add)+'</b></div>':'')+
+        (t?'<div class="row"><span>⛽ Diesel '+(vehicle.returnTrip!==false?'there and back':'one way')+'<span class="sub">'+Math.round(t.km)+' km at '+t.lp+' L/100 · $'+t.dp.toFixed(2)+'/L</span></span><b>−'+money(t.fuel,true)+'</b></div>':'')+'</div>';
+    }
+    if(T.job>0){
+      var msg=quoteText(T);
+      h+='<div class="share"><button type="button" class="c" data-act="copy">📋 Copy</button><a class="x" href="sms:?&body='+encodeURIComponent(msg)+'">💬 Text</a><a class="w" href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">WhatsApp</a></div>';
+    }
+    if(T.missing.length) h+='<p class="note">Type a price for: '+esc(T.missing.join(", "))+'.</p>';
+    if(t) h+='<p class="note">Distance: straight line to the suburb centre +30% for roads. Drive time is a guide, not a GPS route.</p>';
+    $("out").innerHTML=h;
+
+    $("barL").innerHTML = '<b>'+(st.picked?'📍 '+esc(st.picked[0])+(t?' · '+Math.round(t.oneWayKm)+' km · '+mins(t.drive):''):'No suburb yet')+'</b>'+
+      (T.ranged?'Range '+money(T.lo)+(T.hi!==T.lo?'–'+money(T.hi):''):(st.services.length?'':'Tap the pest'))+(t?' · ⛽ '+money(t.fuel):'');
+    $("barBtn").innerHTML='<small>QUOTE</small>'+(T.total?money(T.total):'$—');
   }
 
   function render(){ renderPlace(); renderServices(); renderResult(); renderCar(); }
   function toast(m){ var el=$("toast"); el.textContent=m; el.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(function(){el.classList.remove("show");},2200); }
   function pick(p){
-    st.picked=p; st.postcode=p[1]; st.suburb=""; $("post").value=p[1];
+    st.picked=p; st.postcode=p[1]; st.suburb="";
     recent=[[p[0],p[1]]].concat(recent.filter(function(r){return !(r[0]===p[0]&&r[1]===p[1]);})).slice(0,6); store.set("recent",recent);
-    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();   // drop the keyboard
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
     render();
   }
   function saveCar(){ store.set("vehicle3",vehicle); }
@@ -396,54 +495,56 @@
     var b=e.target.closest("button"); if(!b) return; var d=b.dataset;
     if(d.svc){
       var i=st.services.indexOf(d.svc);
-      if(i>=0){ st.services.splice(i,1); delete st.price[d.svc]; delete st.level[d.svc]; } else st.services.push(d.svc);
+      if(i>=0){ st.services.splice(i,1); delete st.price[d.svc]; } else st.services.push(d.svc);
       render();
     } else if(d.prop){
       st.property = st.property===d.prop ? null : d.prop;
       if(st.property && st.services.indexOf("general")<0) st.services.unshift("general");
-      delete st.price.general; delete st.level.general; render();
-    } else if(d.lv){
-      st.level[d.for]=d.lv; st.price[d.for]=String(rangeOf(d.for)[d.lv]); render();
-    } else if(d.step){
-      var cur=priceOf(d.for), nv=Math.max(0,cur+Number(d.step)); st.price[d.for]=String(nv); st.level[d.for]=null; render();
+      delete st.price.general; render();
+    } else if(d.lv){ st.price[d.for]=String(rangeOf(d.for)[d.lv]); updateSvc(d.for);
+    } else if(d.step){ st.price[d.for]=String(Math.max(0,priceOf(d.for)+Number(d.step))); updateSvc(d.for);
     } else if(d.addon){ st.addon=d.addon; renderResult();
     } else if(d.place){ pick(PLACES[+d.place]);
     } else if(d.origin){
       if(d.origin==="base"){ origin.mode="base"; render(); }
       else locate(function(lat,lng){ var n=nearest(lat,lng); origin={mode:"here",here:{lat:lat,lng:lng,name:n?n[0]:"your location"}}; toast("Measuring from "+origin.here.name); render(); });
     } else if(d.lp){ vehicle.litresPer100=Number(d.lp); saveCar(); render();
-    } else if(d.act==="jobHere"){
-      locate(function(lat,lng){ var n=nearest(lat,lng); if(n){ pick(n); toast("Job set to "+n[0]); } else toast("You're outside the suburb list. Type the postcode."); });
-    } else if(d.act==="clearPlace"){ st.picked=null; st.postcode=""; st.suburb=""; $("post").value=""; render(); $("post").focus();
+    } else if(d.act==="jobHere"){ locate(function(lat,lng){ var n=nearest(lat,lng); if(n){ pick(n); toast("Job set to "+n[0]); } else toast("Outside the suburb list. Type the postcode."); });
+    } else if(d.act==="clearPlace"){ st.picked=null; st.postcode=""; st.suburb=""; render(); $("post").focus();
     } else if(d.act==="toQuote"){ $("quoteCard").scrollIntoView({behavior:"smooth",block:"start"});
     } else if(d.act==="copy"){
       var txt=quoteText(totals());
       (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){toast("Quote copied");},function(){
         var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
         try{document.execCommand("copy");toast("Quote copied");}catch(x){toast("Couldn't copy");} ta.remove(); });
-    } else if(b.id==="resetAll"){ st=fresh(); $("post").value=""; render(); window.scrollTo({top:0,behavior:"smooth"});
+    } else if(b.id==="resetAll"){ st=fresh(); render(); window.scrollTo({top:0,behavior:"smooth"});
     } else if(b.id==="resetCar"){ vehicle=Object.assign({},VEHICLE_DEFAULTS); origin={mode:"base",here:null}; saveCar(); $("diesel").value=vehicle.dieselPerLitre; render(); }
   });
 
   document.addEventListener("input", function(e){
-    var el=e.target;
-    if(el.id==="post"){
+    var el=e.target, d=el.dataset||{};
+    if(d.slide){
+      var r=rangeOf(d.slide), v=Number(el.value);
+      // snap to $5, but let the ends land exactly on the range ends
+      var snapped = v>=r.hi-2 ? r.hi : v<=r.lo+2 ? r.lo : Math.round(v/STEP)*STEP;
+      st.price[d.slide]=String(snapped); updateSvc(d.slide,true);
+    } else if(el.id==="post"){
       var dg=el.value.replace(/\D/g,"").slice(0,4); el.value=dg;
       st.postcode=dg; st.suburb=""; st.picked=null;
       if(dg.length===4){ var hits=byPostcode(dg); if(hits.length===1){ pick(hits[0]); return; } }
-      render();
-    } else if(el.id==="sub"){ st.suburb=el.value; st.postcode=""; $("post").value=""; renderPlace();
-    } else if(el.dataset && el.dataset.price){
-      var id=el.dataset.price, v=el.value.replace(/\D/g,""); if(v!==el.value) el.value=v;
-      st.price[id]=v; st.level[id]=null;
-      var r=rangeOf(id); if(r) ["lo","typ","hi"].forEach(function(k){ if(String(r[k])===v) st.level[id]=k; });
-      Array.prototype.forEach.call(document.querySelectorAll('[data-lv][data-for="'+id+'"]'),function(btn){btn.classList.toggle("on",btn.dataset.lv===st.level[id]);});
-      $("w_"+id).innerHTML=warnFor(id); renderResult();
+      renderPlace(); renderResult();
+    } else if(el.id==="sub"){ st.suburb=el.value; st.postcode=""; renderPlace();
+    } else if(d.price){
+      var v2=el.value.replace(/\D/g,""); if(v2!==el.value) el.value=v2;
+      st.price[d.price]=v2; updateSvc(d.price);
     } else if(el.id==="diesel"){
       var dv=el.value.replace(/[^0-9.]/g,""); if(dv!==el.value) el.value=dv;
       vehicle.dieselPerLitre=dv; saveCar(); renderPlace(); renderResult();
     }
   });
+  // light buzz on Android when crossing Low/Medium/High (iPhone Safari ignores this)
+  var lastZone={};
+  document.addEventListener("input",function(e){ var d=e.target.dataset; if(d&&d.slide){ var z=zoneOf(d.slide,priceOf(d.slide)).k; if(lastZone[d.slide]&&lastZone[d.slide]!==z&&navigator.vibrate) navigator.vibrate(8); lastZone[d.slide]=z; } });
   $("returnTrip").addEventListener("change",function(){ vehicle.returnTrip=this.checked; saveCar(); renderResult(); });
   document.addEventListener("keydown",function(e){ if(e.key==="Enter" && e.target.id==="sub"){ var m=bySuburb(st.suburb); if(m.length) pick(m[0]); } });
 
